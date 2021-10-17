@@ -26,7 +26,7 @@ Simple obfuscator for source code written in language C++.
 
 
 ## Program handling
-![](./GUI/images/GUI.png)
+![](./GUI/images/GUI1.png)
 1. Use to 'F' button to choose file for obfuscation
 2. In the second field enter the name of the output file, e.g. test.cpp
 	2.1 Then choose by next button 'F' the path to save the final file.
