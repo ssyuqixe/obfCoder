@@ -1,4 +1,3 @@
-
 # obfCoder
 Simple obfuscator for source code written in language C++.
 
