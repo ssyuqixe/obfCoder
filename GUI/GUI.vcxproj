@@ -37,8 +37,8 @@
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>QT5.9.9</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtInstall>5.12.11_msvc2017_64</QtInstall>
+    <QtModules>core;gui;widgets;winextras</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -70,10 +70,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\User\source\repos\GUI\GUI\OpenSSL\STATIC\x64\Release\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>S:\zut-vr-game\obfCoder\GUI\OpenSSL\STATIC\x64\Release\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>C:\Users\User\source\repos\GUI\GUI\OpenSSL\STATIC\x64\Release\lib\libcrypto.lib;C:\Users\User\source\repos\GUI\GUI\OpenSSL\STATIC\x64\Release\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>S:\zut-vr-game\obfCoder\GUI\OpenSSL\STATIC\x64\Release\lib\libcrypto.lib;S:\zut-vr-game\obfCoder\GUI\OpenSSL\STATIC\x64\Release\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>xcopy /d /y "$(ProjectDir)dlls\*.*" "$(OutDir)"</Command>

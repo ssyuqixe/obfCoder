@@ -64,7 +64,7 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 
 			diffrence++;
 			if (diffrence > size)
-				throw "Nie znaleziono zmiennych";
+				throw "Not found variables";
 		}
 		//std::sort(settings::junkerOptions.begin(), settings::junkerOptions.end());
 		int option;
@@ -126,7 +126,7 @@ bool Junker::FindIndexToAddJunk(int& index, int diffrence, Variable*& variableDa
 			if (variable.isArray > 0 || variable.type.compare(L"bool") == 0)
 				continue;
 
-			if (ptr_mainString->at(index + diffrence).find(L" const ") != std::wstring::npos)
+			if (ptr_mainString->at(index + diffrence).find(L" const ") != std::wstring::npos && ptr_mainString->at(index + diffrence).find(L"const ") != std::wstring::npos)
 				continue;
 
 			//if ((helpindex + 2) < contToCheckIfPointer.size() && contToCheckIfPointer[helpindex + 2].compare(L"new") == 0)
@@ -236,9 +236,9 @@ void Junker::AddForConnected(int& index, Variable*& variable, std::vector<indexP
 {
 
 	wchar_t random = (rand() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0) {
-		uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
 	allJunkNames.push_back(uniname);
 
@@ -265,13 +265,13 @@ void Junker::AddForSemiConnected(int& index, Variable*& variable, std::vector<in
 {
 
 	wchar_t random = (rand() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0) {
-		uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
 	allJunkNames.push_back(uniname);
-	std::wstring addvariable1 = RandomUnicode(2, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring addvariable2 = RandomUnicode(2, 0x0061, 0x007A);// RandomUnicode(2, 0x4E00, 0x62FF);
+	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
+	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A);// RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring junk = L" \n\t int " + addvariable1 + L" = 0; \n";
 	std::wstring junk2 = L"\t bool " + addvariable2 + L" = true; \n";
 	std::wstring junk3 = L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n";
@@ -295,14 +295,14 @@ void Junker::AddForSemiConnected(int& index, Variable*& variable, std::vector<in
 void Junker::AddForUnconnected(int& index, std::vector<indexPair>& contBlokedSpace)
 {
 	wchar_t random = (rand() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0) {
-		uniname = RandomUnicodeUntilNewValue(2, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
 	allJunkNames.push_back(uniname);
 
-	std::wstring addvariable1 = RandomUnicode(2, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring addvariable2 = RandomUnicode(2, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
+	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
+	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring junk = L" \n \t int " + addvariable1 + L" = 0; \n\0";
 	std::wstring junk2 = L"\t int " + addvariable2 + L" = 1; \n\0";
 	std::wstring junk3 = L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n\0";

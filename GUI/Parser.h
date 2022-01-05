@@ -21,7 +21,9 @@ private:
 	std::vector<std::wstring> special_operators{ L"+=", L"-=", L"*=", L"/=", L"<=",L">=",L"++", L"--", L"!=", L"//", L"<<", L">>", L"**", L"->", L"||" };
 	std::vector<std::wstring> operators{ L"=",L"+", L"-", L"/", L"*", L"%", L"&", L"<", L">", L"^", L"!", L"?", L",", L"." }; 
 
-	MapCode mapVariables;
+	std::wstring startBlock = L"#define obf_block_start";
+	std::wstring endBlock = L"#define obf_block_end";
+
 	std::vector<Variable> variables;
 
 	bool isError;
@@ -30,6 +32,8 @@ private:
 
 
 	std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue);
+	std::vector<indexPair> FindBlockIndex();
+
 	void NewNameVariables(std::vector<Variable>& variables, std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter);
 
 	void AddExpectionsWords();

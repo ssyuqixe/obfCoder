@@ -73,6 +73,7 @@ void Parser::SpaceOperators()
 	std::vector<std::wstring> sufix{ L"=", L"+", L"-", L"*", L"/", L"<", L">", L"&", L"|", L"^", L"!" };
 	std::vector<int> positions; 
 	std::vector<indexPair> indexPositions;
+	std::vector<indexPair> indexPositionsBlock;
 	size_t index = 0;
 	size_t indexOfPair = 0;
 
@@ -87,6 +88,7 @@ void Parser::SpaceOperators()
 
 		indexPositions.erase(indexPositions.begin(), indexPositions.end());
 		indexPositions = FindCharIndex(line, L"\"", isContinue);
+
 		isContinue = IsContinue(indexPositions, isContinue);
 
 
@@ -189,6 +191,7 @@ void Parser::SpaceOperatorsFix()
 
 
 		OperatorException(line, L";", L" ; ", 1, 2, indexPositions);
+		//OperatorException(line, L"'", L" ' ", 1, 2, indexPositions);
 		OperatorException(line, L",", L" , ", 1, 2, indexPositions);
 		OperatorException(line, L"(", L" ( ", 1, 2, indexPositions);
 		OperatorException(line, L"[", L" [ ", 1, 2, indexPositions);
@@ -204,9 +207,7 @@ void Parser::SpaceOperatorsFix()
 
 void Parser::DeleteComments()
 {
-	std::string newString;
 	bool commentLong = false;
-	bool lastChar = false;
 	for (auto& line : mainString) {
 		if (!commentLong && !line.empty() && line.find(L"/*") != std::string::npos) {
 
@@ -266,6 +267,10 @@ void Parser::FindVariables()
 				save = false;
 				continue;
 			}
+			if (save && !splitedLine[i].empty() && splitedLine[i].find(L'&') != std::string::npos) { //Stop searching in line if there is a function by using "(" with name
+				next = true;
+				continue;
+			}
 			if (save && !splitedLine[i].empty() && splitedLine[i].find(L'*') != std::string::npos) {
 				next = true;
 
@@ -275,6 +280,7 @@ void Parser::FindVariables()
 					pointerCounter++;
 				continue;
 			}
+
 
 			for (auto& type : typesOfVariables)
 				if (!next && !line.empty() && line.find(type) != std::string::npos)
@@ -290,7 +296,12 @@ void Parser::FindVariables()
 
 
 				change = true;
-				if (splitedLine[i] == L">" || splitedLine[i] == L"const") change = false;
+				if (splitedLine[i] == L">" || splitedLine[i] == L">>" || splitedLine[i] == L";" || splitedLine[i] == L"," || splitedLine[i] == L"const") change = false;
+				
+
+				if (i - 2 >= 0 && splitedLine[i - 2] == L"const") {
+					change = false;
+				}
 
 				if(change == true)
 					for (auto& variable : variables) {
@@ -377,6 +388,33 @@ std::vector<indexPair> Parser::FindCharIndex(std::wstring& line, std::wstring _c
 
 	return indexVector;
 
+}
+
+std::vector<indexPair> Parser::FindBlockIndex()
+{
+	std::vector<indexPair> indexVector;
+	bool isBlockStarted = false;
+	size_t startIndex;
+
+	int i = 0; 
+	for (auto& line : this->mainString) {
+		if (!line.empty() && line.find(startBlock) != std::wstring::npos) {
+			isBlockStarted = true;
+			startIndex = i++;
+			continue;
+		}
+
+		if (!line.empty() && isBlockStarted == true && line.find(endBlock) != std::wstring::npos)
+		{
+			indexVector.push_back(indexPair(startIndex, i++));
+			isBlockStarted = false;
+			continue;
+		}
+
+		i++;
+	}
+
+	return indexVector;
 }
 
 void Parser::NewNameVariables(std::vector<Variable>& variables, std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter)
@@ -561,8 +599,9 @@ void Parser::DeleteUnnecessarySpaces()
 		indexPositions = FindCharIndex(line, L"\"", isContinue);
 		isContinue = IsContinue(indexPositions, isContinue);
 
+		//OperatorException(line, L" ' ", L"'", 2, -2, indexPositions);
 		OperatorException(line, L" ; ", L";", 2, -2, indexPositions);
-		OperatorException(line, L" , ", L",", 2, -2, indexPositions);
+		OperatorException(line, L" , ", L",", 3, -2, indexPositions);
 		OperatorException(line, L" ( ", L"(", 2, -2, indexPositions);
 		OperatorException(line, L" [ ", L"[", 2, -2, indexPositions);
 		OperatorException(line, L" { ", L"{", 2, -2, indexPositions);
@@ -577,6 +616,8 @@ void Parser::DeleteUnnecessarySpaces()
 		OperatorException(line, L" )", L")", 2, -1, indexPositions);
 		OperatorException(line, L" ]", L"]", 2, -1, indexPositions);
 		OperatorException(line, L" }", L"}", 2, -1, indexPositions);
+		//OperatorException(line, L"' ", L"'", 2, -1, indexPositions);
+		//OperatorException(line, L" '", L"'", 2, -1, indexPositions);
 
 
 		for (auto& o : special_operators)
@@ -586,7 +627,7 @@ void Parser::DeleteUnnecessarySpaces()
 			OperatorException(line, L" " + o + L" ", o, 3, -2, indexPositions);
 
 		OperatorException(line, L"\t", L"", 1, -1, indexPositions);
-		OperatorException(line, L", ", L",", 2, -1, indexPositions);
+		//OperatorException(line, L", ", L",", 2, -1, indexPositions);
 		OperatorException(line, L" ,", L",", 2, -1, indexPositions);
 	    OperatorException(line, L"; ", L";", 2, -1, indexPositions);
 		OperatorException(line, L" ;", L";", 2, -1, indexPositions);
@@ -608,12 +649,31 @@ void Parser::AddExpectionsWords()
 int Parser::FindForLoop(int startIndex)
 {
 	int index = -1;
+
+	std::vector<indexPair> indexBlockPosition = FindBlockIndex();
+
+
 	int countOfRange = 0;
 	bool isSecondLoopInRange = false;
 
 	for (int i = startIndex; i < mainString.size(); i++) {
+
+		if (!indexBlockPosition.empty())
+		{
+			for (auto& indexes : indexBlockPosition)
+			{
+				if (i < indexes.first)
+					break;
+
+				if (i >= indexes.first && i <= indexes.second) {
+					i = indexes.second + 1;
+				}
+			}
+		}
+
 		if(isSecondLoopInRange &&!mainString[i].empty() && mainString[i].find(L"for") != std::wstring::npos && countOfRange == 1)
 		{
+
 			return index;
 		}
 
@@ -629,6 +689,7 @@ int Parser::FindForLoop(int startIndex)
 
 
 		if (!mainString[i].empty() && mainString[i].find(L" for ") != std::wstring::npos) {
+
 			isSecondLoopInRange = true;
 			countOfRange += CountOfRangeChars(i, mainString);
 			index = i;
@@ -906,6 +967,15 @@ void Parser::ChangeLoops()
 	while (index != -1) {
 		index = ChangeLoop(index);
 	}
+
+
+	std::vector<indexPair> indexBlockPosition = FindBlockIndex();
+	for (auto& indexes : indexBlockPosition) {
+		this->mainString[indexes.first].erase();
+		this->mainString[indexes.second].erase();
+
+	}
+
 }
 
 void Parser::AddJunks(int amountOfVariables, int amountOfJunk)

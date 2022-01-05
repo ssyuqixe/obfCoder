@@ -181,6 +181,9 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char* key, int in
 
 	std::vector<indexPair> indexPositions = FindCharIndex(ptr_mainString->at(index) , L"\"", false);
 
+	std::vector<indexPair> indexPositionByChar = FindCharIndex(ptr_mainString->at(index), L"'", false);//
+	std::copy(indexPositionByChar.begin(), indexPositionByChar.end(), std::back_inserter(indexPositions));//
+
 	std::wstring Value = L"";
 	std::wstringstream ss;
 	for (auto& enp : enc_out) {
