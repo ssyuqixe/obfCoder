@@ -12,11 +12,11 @@ int main()
 {
 	int m = 0; 
 	int n = 0;
-	double** macierz;
+	double** matrix;
 	double* wyniki;
 	bool isEqual = true;
 
-	std::ifstream in("macierz.txt");
+	std::ifstream in("matrix.txt");
 	if (in.is_open()) {
 		bool firstLine = true;
 		std::string item;
@@ -25,17 +25,17 @@ int main()
 
 		in >> m >> n;
 
-		macierz = new double* [m];
+		matrix = new double* [m];
 		for (int i = 0; i < n; i++)
 		{
-			macierz[i] = new double[n];
+			matrix[i] = new double[n];
 		}
 
 		for (int i = 0; i < m; i++)
 		{
 			for (int j = 0; j < n; j++)
 			{
-				in >> macierz[i][j];
+				in >> matrix[i][j];
 			}
 		}
 		wyniki = new double[m];
@@ -59,10 +59,10 @@ int main()
 	{
 		for (int l = k + 1; l < m; l++) 
 		{
-			if (std::abs(macierz[k][k]) < std::abs(macierz[l][k])) {
+			if (std::abs(matrix[k][k]) < std::abs(matrix[l][k])) {
 				for (int i = 0; i < n; i++) 
 				{
-					std::swap(macierz[k][i], macierz[l][i]);
+					std::swap(matrix[k][i], matrix[l][i]);
 				}
 				std::swap(wyniki[k], wyniki[l]);
 
@@ -76,7 +76,7 @@ int main()
 	{
 		for (int j = 0; j < n - 1; j++)
 		{
-			if (!((macierz[i][j] / macierz[i + 1][j]) == (wyniki[i] / wyniki[i + 1]))) 
+			if (!((matrix[i][j] / matrix[i + 1][j]) == (wyniki[i] / wyniki[i + 1]))) 
 			{                                                                                
 				isEqual = false;
 				break;
@@ -94,9 +94,9 @@ int main()
 		{
 			for (int j = i + 1; j < m; j++)
 			{
-				b = macierz[j][i] / macierz[i][i];
+				b = matrix[j][i] / matrix[i][i];
 				for (int k = 0; k < n; k++){
-					macierz[j][k] = macierz[j][k] - b * macierz[i][k];
+					matrix[j][k] = matrix[j][k] - b * matrix[i][k];
 				}
 				wyniki[j] -= b * wyniki[i];
 			}
@@ -107,7 +107,7 @@ int main()
 		{
 			for (int j = i + 1; j < m; j++)
 			{
-				macierz[j][i] = 0;
+				matrix[j][i] = 0;
 			}
 		}
 
@@ -120,18 +120,18 @@ int main()
 			{
 				if (j != i)
 				{
-					wyniki[i] = wyniki[i] - macierz[i][j] * wyniki[((m >= n) ? j : j - (m - m))];
+					wyniki[i] = wyniki[i] - matrix[i][j] * wyniki[((m >= n) ? j : j - (m - m))];
 				}
 
 			}
 
-			if (macierz[i][i] == 0)
+			if (matrix[i][i] == 0)
 			{
 				return 1;
 			}
 			else
 			{
-				wyniki[i] = wyniki[i] / macierz[i][i];
+				wyniki[i] = wyniki[i] / matrix[i][i];
 			}
 
 		}
@@ -147,9 +147,9 @@ int main()
 
 	for (int i = 0; i < n; i++)
 	{
-		delete[] macierz[i];
+		delete[] matrix[i];
 	}
-	delete[] macierz;
+	delete[] matrix;
 
 	delete[] wyniki;
 
@@ -162,7 +162,7 @@ int main()
 
 	for (int i = 0; i < m; i++){
 		for (int j = 0; j < n; j++){
-			std::cout << macierz[i][j] << " ";
+			std::cout << matrix[i][j] << " ";
 			}
 		std::cout << std::endl;
 	}

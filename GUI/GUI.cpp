@@ -47,100 +47,107 @@ void GUI::on_saveButton_clicked() {
 void GUI::on_addButton_clicked() {
 	srand(time(NULL));
 
-	Parser* newParser = new Parser(settings::inFileName.toLocal8Bit().constData());
-	ui.textBrowser->clear();
+	//clock_t sumTimeMain = 0;
+	
+		Parser* newParser = new Parser(settings::inFileName.toLocal8Bit().constData());
+		ui.textBrowser->clear();
 
-	if (newParser->Error() == true) {
-		ui.textBrowser->append("Cannot open the file!");
-		return;
-	}
+		if (newParser->Error() == true) {
+			ui.textBrowser->append("Cannot open the file!");
+			return;
+		}
 
-	if (settings::inFileName == "notSelected" || settings::outFileName == "notSelected") {
-		ui.textBrowser->append("Error! Wrong path selected!");
-		return;
-	}
+		if (settings::inFileName == "notSelected" || settings::outFileName == "notSelected") {
+			ui.textBrowser->append("Error! Wrong path selected!");
+			return;
+		}
 
-	ui.b_openFile->setEnabled(false);
-	clock_t time;
-	clock_t sumtime = 0;
-	if (ui.cb_deleteComments->isChecked()) {
-		time = clock();
-		newParser->DeleteComments();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted comments - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (settings::countOfSettings > 0) {
-
-		time = clock();
-		newParser->SpaceOperators();
-		time = clock() - time;
-		ui.textBrowser->append("Parsered text - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (ui.cb_changeLoops->isChecked()) {
-		time = clock();
-		newParser->ChangeLoops();
-		time = clock() - time;
-		ui.textBrowser->append("Changed loops - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (ui.cb_AddJunk->isChecked()) {
-		if (settings::junkerOptions.empty() == false) {
+		ui.b_openFile->setEnabled(false);
+		clock_t time;
+		clock_t sumtime = 0;
+		if (ui.cb_deleteComments->isChecked()) {
 			time = clock();
-			newParser->FindVariables();
-			newParser->AddJunks(ui.sp_AmountVariables->value(), ui.sp_AmountCodes->value());
+			newParser->DeleteComments();
 			time = clock() - time;
-			ui.textBrowser->append("Added code - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			ui.textBrowser->append("Deleted comments - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 			sumtime += time;
 		}
-		else
-			ui.textBrowser->append("Adding additional code failed because no options were selected!");
-	}
 
-	if (ui.cb_ChangeVariables->isChecked()) {
-		time = clock();
-		newParser->FindVariables();
-		newParser->ChangeVariables();
-		newParser->SpaceOperatorsFix();
-		time = clock() - time;
-		ui.textBrowser->append("Renamed variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
+		if (settings::countOfSettings > 0) {
 
-	if (ui.cb_Encryption->isChecked()) {
-		time = clock();
-		newParser->AddEncryption(ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked());
-		time = clock() - time;
-		ui.textBrowser->append("Encryption of variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
+			time = clock();
+			newParser->SpaceOperators();
+			time = clock() - time;
+			ui.textBrowser->append("Parsered text - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
+
+		if (ui.cb_changeLoops->isChecked()) {
+			time = clock();
+			newParser->ChangeLoops();
+			time = clock() - time;
+			ui.textBrowser->append("Changed loops - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
+
+		if (ui.cb_AddJunk->isChecked()) {
+			if (settings::junkerOptions.empty() == false) {
+				time = clock();
+				newParser->FindVariables();
+				newParser->AddJunks(ui.sp_AmountVariables->value(), ui.sp_AmountCodes->value());
+				time = clock() - time;
+				ui.textBrowser->append("Added code - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+				sumtime += time;
+			}
+			else
+				ui.textBrowser->append("Adding additional code failed because no options were selected!");
+		}
+
+		if (ui.cb_ChangeVariables->isChecked()) {
+			time = clock();
+			newParser->FindVariables();
+			newParser->ChangeVariables();
+			newParser->SpaceOperatorsFix();
+			time = clock() - time;
+			ui.textBrowser->append("Renamed variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
+
+		if (ui.cb_Encryption->isChecked()) {
+			time = clock();
+			newParser->AddEncryption(ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked());
+			time = clock() - time;
+			ui.textBrowser->append("Encryption of variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
 
 
-	if (ui.cb_DeleteEnters->isChecked()) {
-		time = clock();
-		newParser->DeleteEnters();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted transition to the new line - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
+		if (ui.cb_DeleteEnters->isChecked()) {
+			time = clock();
+			newParser->DeleteEnters();
+			time = clock() - time;
+			ui.textBrowser->append("Deleted transition to the new line - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
 
-	if (ui.cb_DeleteSpace->isChecked()) {
-		time = clock();
-		newParser->DeleteUnnecessarySpaces();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted spaces - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
+		if (ui.cb_DeleteSpace->isChecked()) {
+			time = clock();
+			newParser->DeleteUnnecessarySpaces();
+			time = clock() - time;
+			ui.textBrowser->append("Deleted spaces - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
+		}
 
-	ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
+		ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
+
+		newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
+		//sumTimeMain += sumtime;
+		delete newParser;
 	ui.b_openFile->setEnabled(true);
+	//ui.textBrowser->append("Summary: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
+	//ui.textBrowser->append("Summary: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 10e6, 'f', 4) + "s.");
+	
 
-	delete newParser;
 
 }
 

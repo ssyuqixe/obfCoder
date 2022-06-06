@@ -38,7 +38,7 @@ public:
 
 int main()
 {
-	std::ifstream in("drzewo.txt");
+	std::ifstream in("tree.txt");
 	bst* tree = new bst();
 
 	double a = 0;

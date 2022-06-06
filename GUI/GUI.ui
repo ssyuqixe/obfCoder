@@ -463,7 +463,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Nazwa Pliku Wejsciowego:</string>
+     <string>Input File Name:</string>
     </property>
    </widget>
    <widget class="QLabel" name="fileNameLabelOut">
@@ -476,7 +476,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Nazwa Pliku Wyjsciowego:</string>
+     <string>Output File Name:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="b_SaveFile">

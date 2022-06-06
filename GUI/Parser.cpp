@@ -299,9 +299,11 @@ void Parser::FindVariables()
 				if (splitedLine[i] == L">" || splitedLine[i] == L">>" || splitedLine[i] == L";" || splitedLine[i] == L"," || splitedLine[i] == L"const") change = false;
 				
 
+				
+				///*
 				if (i - 2 >= 0 && splitedLine[i - 2] == L"const") {
 					change = false;
-				}
+				}//*/
 
 				if(change == true)
 					for (auto& variable : variables) {
@@ -451,6 +453,9 @@ void Parser::ChangeVariables()
 	std::vector<indexPair> indexPositions;
 
 	for (auto& line : this->mainString) {
+		if (line.empty() == true)
+			continue;
+
 		index = 0;
 		diff = 0;
 
@@ -458,9 +463,22 @@ void Parser::ChangeVariables()
 		indexPositions = FindCharIndex(line, L"\"", isContinue);
 
 		isContinue = IsContinue(indexPositions, isContinue);
+		
+
+		while(line.find(L" false ") != std::string::npos)
+		{
+			index = line.find(L" false ", 0);
+			line.replace(index, 7, L" 0 ");
+		}
+		while (line.find(L" true ") != std::string::npos)
+		{
+			index = line.find(L" true ", 0);
+			line.replace(index, 6, L" 1 ");
+		}
+
 
 		for (auto const& variable : this->variables) {
-			if (!line.empty() && line.find(L" " + variable.name + L" ") != std::string::npos) { 
+			if (line.find(L" " + variable.name + L" ") != std::string::npos) { 
 				index = line.find(L" " + variable.name + L" "); 
 				indexOfPair = 0;
 				while (line.find(L" " + variable.name + L" ", index) != std::string::npos) { 
@@ -643,6 +661,8 @@ void Parser::AddExpectionsWords()
 	variables.push_back(Variable(L" operator ", L"operator", L"special"));
 	variables.push_back(Variable(L" NULL ", L"NULL", L"special"));
 	variables.push_back(Variable(L" [ ", L"[", L"special"));
+	//variables.push_back(Variable(L"false", L"0", L"special"));
+	//variables.push_back(Variable(L"true", L"1", L"special"));
 	//variables.insert(variables.begin(), Variable(word, newName, typeOfVariable));
 }
 
