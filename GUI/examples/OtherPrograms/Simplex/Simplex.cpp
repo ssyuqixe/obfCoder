@@ -47,7 +47,7 @@ int findMinElementIndex(double tab[], int size) {
 	return index;
 }
 
-int main(){
+int main() {
 	int m = 0;
 	int n = 0;
 	double** A = nullptr;
@@ -60,17 +60,14 @@ int main(){
 
 	std::ifstream inFile("simplex.txt");
 	if (inFile.is_open()) {
-		//Pobranie wymiarow macierzy
 		inFile >> m >> n;
 
-		//Stworzenie tablicy A
 		A = new double* [m];
 		for (int i = 0; i < m; i++)
 		{
 			A[i] = new double[n];
 		}
 
-		//Przepisanie zmiennych
 		for (int i = 0; i < m; i++)
 		{
 			for (int j = 0; j < n; j++)
@@ -107,38 +104,38 @@ int main(){
 		inFile.close();
 	}
 	else {
-		std::cout << "Nie mozna otworzyc pliku" << std::endl;
+		std::cout << "Cant open the file" << std::endl;
 		return 0;
 	}
 
 
-	for (int i = 0; i < n; i++) 
+	for (int i = 0; i < n; i++)
 	{
-		ww[i] = Cj[i]; // Cb' * A(:,i) otrzymamy 0
+		ww[i] = Cj[i]; // Cb' * A(:,i) 
 	}
 
 	double F = 0;
 
-	bool zakoncz = false;
+	bool isFinished = false;
 
 	while (checkWW(ww, n)) {
 		int KK = findMaxElementIndex(ww, n);
 
-		double* iloraz = new double[m];
+		double* quotient = new double[m];
 
-		for (int i = 0; i < m; i++) 
+		for (int i = 0; i < m; i++)
 		{
-			iloraz[i] = B[i] / A[i][KK];
+			quotient[i] = B[i] / A[i][KK];
 		}
 
-		int WK = findMinElementIndex(iloraz, m);
-		delete[] iloraz;
+		int WK = findMinElementIndex(quotient, m);
+		delete[] quotient;
 
 		Cb[WK] = Cj[KK];
 
 		double ER = A[WK][KK];
 
-		for (int i = 0; i < n; i++) 
+		for (int i = 0; i < n; i++)
 		{
 			A[WK][i] = A[WK][i] / ER;
 		}
@@ -146,11 +143,11 @@ int main(){
 
 		double temp = 0;
 
-		for (int i = 0; i < m; i++) 
+		for (int i = 0; i < m; i++)
 		{
 			if (i != WK) {
 				temp = A[i][KK] / A[WK][KK];
-				for (int j = 0; j < n; j++) 
+				for (int j = 0; j < n; j++)
 				{
 					A[i][j] = A[i][j] - temp * A[WK][j];
 				}
@@ -158,36 +155,36 @@ int main(){
 			}
 		}
 
-		for (int i = 0; i < m; i++) 
+		for (int i = 0; i < m; i++)
 		{
 			F += Cb[i] * B[i];
 		}
 
-		double* iloczyn = new double[n];
-		for (int i = 0; i < n; i++) 
+		double* product = new double[n];
+		for (int i = 0; i < n; i++)
 		{
-			iloczyn[i] = 0;
-			for (int j = 0; j < m; j++) 
+			product[i] = 0;
+			for (int j = 0; j < m; j++)
 			{
-				iloczyn[i] += Cb[j] * A[j][i];
+				product[i] += Cb[j] * A[j][i];
 			}
 		}
 
-		for (int i = 0; i < n; i++) 
+		for (int i = 0; i < n; i++)
 		{
-			ww[i] = Cj[i] - iloczyn[i];
+			ww[i] = Cj[i] - product[i];
 		}
 
-		/*		
-		double iloczyn = 0;
-		for (int i = 0; i < 5; i++) 
+		/*
+		double product = 0;
+		for (int i = 0; i < 5; i++)
 		{
-			for (int j = 0; j < 3; j++) 
+			for (int j = 0; j < 3; j++)
 			{
-				iloczyn += Cb[j] * A[j][i];
+				product += Cb[j] * A[j][i];
 			}
-			ww[i] = Cj[i] - iloczyn;
-			iloczyn = 0;
+			ww[i] = Cj[i] - product;
+			product = 0;
 		}*/
 
 	}
@@ -195,7 +192,7 @@ int main(){
 	double x1 = 0;
 	double x2 = 0;
 
-	for (int i = 0; i < n; i++) 
+	for (int i = 0; i < n; i++)
 	{
 		if (Cb[i] == Cj[0]) {
 			x1 = B[i];
@@ -205,13 +202,13 @@ int main(){
 		}
 	}
 
-	std::cout << "Wynik: x1 = " << x1 << " x2 = " << x2 << std::endl;
-	
+	std::cout << "Result: x1 = " << x1 << " x2 = " << x2 << std::endl;
+
 	for (int i = 0; i < m; i++)
 	{
 		delete[] A[i];
 	}
-	delete[] A; 
+	delete[] A;
 	delete[] B;
 	delete[] Cj;
 	delete[] Cb;

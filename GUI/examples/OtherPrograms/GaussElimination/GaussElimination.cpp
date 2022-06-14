@@ -1,4 +1,4 @@
-﻿// Przyklady.cpp : This file contains the 'main' function. Program execution begins and ends there.
+﻿// This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include <iostream>
@@ -50,7 +50,7 @@ int main()
 		in.close();
 	}
 	else {
-		std::cout << "Nie mozna otworzyc pliku" << std::endl;
+		std::cout << "Cant open the file!" << std::endl;
 		return 0;
 	}
 
@@ -86,7 +86,7 @@ int main()
 	}
 
 
-	//Uzywanie eliminacji Gaussa Jordana
+	//Using Gauss Elimination
 	double b = 0;
 	if (!isEqual) 
 	{
@@ -112,9 +112,9 @@ int main()
 		}
 
 
-		//Podstawianie wsteczne
+		//backtrack?
 
-		for (int i = (m > n) ? n - 1 : m - 1; i >= 0; i--) //Zabezpieczenie kiedy jest wiecej wierszy niz zmiennych
+		for (int i = (m > n) ? n - 1 : m - 1; i >= 0; i--) //
 		{
 			for (int j = i + 1; j < n; j++)
 			{
@@ -137,7 +137,7 @@ int main()
 		}
 	}
 
-	std::cout << "Wynik: ";
+	std::cout << "Result: ";
 	for (int i = 0; i < m; i++)
 	{
 		std::cout << wyniki[i] << " ";

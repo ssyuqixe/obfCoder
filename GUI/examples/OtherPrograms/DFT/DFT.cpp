@@ -52,7 +52,7 @@ int main() {
 		inFile >> fs >> Tc >> phi >> A1 >> f1 >> A2 >> f2;
 	}
 	else {
-		std::cout << "Nie mozna otworzyc pliku" << std::endl;
+		std::cout << "Can't open the file!" << std::endl;
 		return 0;
 	}
 

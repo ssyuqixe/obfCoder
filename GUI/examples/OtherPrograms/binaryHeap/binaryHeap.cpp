@@ -49,7 +49,7 @@ int main()
         }
     }
     else {
-        std::cout << "Nie mozna otworzyc pliku" << std::endl;
+        std::cout << "Can't open the file" << std::endl;
         return 0;
     }
 
@@ -121,7 +121,7 @@ template<typename T>
 T bHeap<T>::deleteMax()
 {
     if (tab.empty()) {
-        std::cout << "Kopiec jest pusty!" << std::endl;
+        std::cout << "Heap is empty!" << std::endl;
         return 0;
     }
 
@@ -146,7 +146,7 @@ void bHeap<T>::deleteAll()
 
     tab.erase(tab.begin(), tab.end());
     size = 0;
-    std::cout << "Usuwanie zakonczone pomyslnie!" << std::endl;
+    std::cout << "Removal successfully completed!" << std::endl;
 }
 
 template<typename T>

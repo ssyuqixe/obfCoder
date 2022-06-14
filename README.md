@@ -72,8 +72,7 @@ return 0;
 ```
 After:
 ```cpp
-int main( ) 
-int main( ) 
+int main( )
 { 
     for( int t = 0 ; t < ( 5 * 3 ) ; t ++ ) 
     { 
@@ -174,7 +173,7 @@ int test = 15 ;
  }
 ```
 
-Incrementation - Increments the variable n times and then undoes the whole process. \
+Incrementation - Increments the variable n times and then undoes the whole process. 
 ```cpp
 int test = 15;
 ```
@@ -284,4 +283,4 @@ There is also a problem with extra code that can add artymetic expressions with 
 MIT
 
 ## ACKNOWLEDGEMENTS
-This research was supported by ZUT Highfliers School (Szkoła Orłów ZUT) project, co-ordinated by Dr. Piotr Sulikowski, within the framework of the program of the Minister of Education and Science (Grant No. MNiSW/2019/391/DIR/KH, POWR.03.01.00-00-P015/18), co-financed by the European Social Fund, the amount of financing PLN 1,704,201,66.  
+\***

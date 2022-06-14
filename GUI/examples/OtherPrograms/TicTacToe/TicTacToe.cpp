@@ -19,11 +19,11 @@ void Draw(gameInformation* memseg, char player) {
     system("clear");
     if (player == 0)
     {
-        std::cout << "Host - krzyk" << std::endl;
+        std::cout << "Host - cross" << std::endl;
     }
     else
     {
-        std::cout << "User - kolko" << std::endl;
+        std::cout << "User - ring" << std::endl;
     }
     for (int i = 1; i <= 9; i++)
     {
@@ -40,7 +40,7 @@ void Draw(gameInformation* memseg, char player) {
 void DoMove(gameInformation* memseg, char player) {
     int move = 0;
     char _char = '0';
-    std::cout << "Wykonaj ruch [1-9]: " << std::endl;
+    std::cout << "Do move [1-9]: " << std::endl;
     while (1) {
         if (scanf("%d", &move) == 0)
         {
@@ -56,11 +56,11 @@ void DoMove(gameInformation* memseg, char player) {
         }
         else if (memseg->map[move - 1] != '#')
         {
-            std::cout << "Wybrales zajete pole! Wybierz jeszcze raz: [1-9]" << std::endl;
+            std::cout << "You have selected an occupied field! Choose again: [1-9]" << std::endl;
         }
         else
         {
-            std::cout << "Wybrales zle pole! Wybierz jeszcze raz: [1-9]" << std::endl;
+            std::cout << "ou have selected the wrong field! Choose again: [1-9]" << std::endl;
         }
     }
     if (player)
@@ -75,7 +75,7 @@ void DoMove(gameInformation* memseg, char player) {
     }
     Draw(memseg, player);
 
-    std::cout << "Trwa ruch przeciwnika..." << std::endl;
+    std::cout << "Waiting for enemy move..." << std::endl;
 }
 
 void WaitForMove(gameInformation* memseg, char player) {
@@ -153,9 +153,9 @@ int main(int argc, wchar_t** argv) {
     {
         if (argc > 2)
         {
-            std::cout << strerror(errno) << " uzyto za duzo argumentow" << std::endl;
+            std::cout << strerror(errno) << " too many params" << std::endl;
         }
-        std::cout << strerror(errno) << " uzyj " << *argv[0] << " <nazwa pliku> \n np. " << * argv[0] << " abc123" << std::endl;
+        std::cout << strerror(errno) << " use " << *argv[0] << " <name of file> \n np. " << * argv[0] << " abc123" << std::endl;
         return 1;
     }
 
@@ -217,17 +217,17 @@ int main(int argc, wchar_t** argv) {
     }
     if (memseg->isEnded == 0 && memseg->moves == 9)
     {
-        std::cout << "Remis!" << std::endl;
+        std::cout << "Draw!" << std::endl;
     }
     else
     {
         if (memseg->isEnded == player + 1)
         {
-            std::cout << "Wygrales!" << std::endl;
+            std::cout << "You won!" << std::endl;
         }
         else
         {
-            std::cout << "Przegrales!" << std::endl;
+            std::cout << "You lost!" << std::endl;
         }
     }
 

@@ -28,7 +28,7 @@ void GUI::on_loadButton_clicked() {
 
 
 	ui.lineEdit->setText(settings::inFileName);
-	ui.fileNameLabelIn->setText("Input File: " + settings::inFileName.split('/').last());
+	ui.fileNameLabelIn->setText("Input File Name: " + settings::inFileName.split('/').last());
 }
 
 void GUI::on_saveButton_clicked() {

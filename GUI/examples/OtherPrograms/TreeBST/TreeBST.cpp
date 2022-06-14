@@ -52,7 +52,7 @@ int main()
 		in.close();
 	}
 	else {
-		std::cout << "Nie mozna otworzyc pliku" << std::endl;
+		std::cout << "Cant open the file" << std::endl;
 		return 0;
 	}
 
