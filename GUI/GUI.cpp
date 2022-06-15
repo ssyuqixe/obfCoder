@@ -47,8 +47,8 @@ void GUI::on_saveButton_clicked() {
 void GUI::on_addButton_clicked() {
 	srand(time(NULL));
 
-	//clock_t sumTimeMain = 0;
-	
+	clock_t sumTimeMain = 0;
+	//for (int i = 0; i < 100; i++) {
 		Parser* newParser = new Parser(settings::inFileName.toLocal8Bit().constData());
 		ui.textBrowser->clear();
 
@@ -139,13 +139,15 @@ void GUI::on_addButton_clicked() {
 		}
 
 		ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
-
+	//	sumTimeMain += sumtime;
 		newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
 		//sumTimeMain += sumtime;
 		delete newParser;
+	//}
+		
 	ui.b_openFile->setEnabled(true);
-	//ui.textBrowser->append("Summary: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	//ui.textBrowser->append("Summary: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 10e6, 'f', 4) + "s.");
+	//ui.textBrowser->append("Total time: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
+	//ui.textBrowser->append("Mean: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 100, 'f', 4) + "s.");
 	
 
 
