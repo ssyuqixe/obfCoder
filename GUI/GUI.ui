@@ -340,7 +340,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>209</width>
+        <width>91</width>
         <height>17</height>
        </rect>
       </property>
@@ -378,6 +378,25 @@
       </property>
       <property name="text">
        <string>Only loops for</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="cb_TPM">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>0</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TPM</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
       </property>
      </widget>
     </widget>
@@ -524,14 +543,69 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>310</y>
-      <width>221</width>
+      <x>320</x>
+      <y>300</y>
+      <width>311</width>
       <height>61</height>
      </rect>
     </property>
     <property name="text">
      <string>Execute</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_3">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>320</y>
+      <width>210</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>12</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>In</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="b_LoadFile_2">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>320</y>
+      <width>20</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>F</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>340</y>
+      <width>211</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Decrypt</string>
     </property>
    </widget>
   </widget>

@@ -52,6 +52,15 @@
     <ClCompile Include="Junker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TPM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TpmConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Parser.h">
@@ -67,6 +76,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Junker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TPM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TpmConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

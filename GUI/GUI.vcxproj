@@ -14,25 +14,26 @@
     <ProjectGuid>{3673EBDE-9BBC-4850-AEFF-C299B28AE374}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>obfCoder</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>5.12.11_msvc2017_64</QtInstall>
+    <QtInstall>5.12.12_msvc2017_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
@@ -62,11 +63,20 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link>
-      <AdditionalDependencies>F:\obfCoder\obfCoder\GUI\OpenSSL\STATIC\x64\Debug\lib\libcrypto.lib;F:\obfCoder\obfCoder\GUI\OpenSSL\STATIC\x64\Debug\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\x64\libcrypto.lib;lib\x64\TSS.CPP.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>F:\obfCoder\obfCoder\GUI\OpenSSL\STATIC\x64\Debug\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAsManaged>false</CompileAsManaged>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -110,6 +120,9 @@
     <ClCompile Include="Junker.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="TPM.cpp" />
+    <ClCompile Include="TpmConfig.cpp" />
     <QtRcc Include="GUI.qrc" />
     <QtUic Include="GUI.ui" />
     <QtMoc Include="GUI.h" />
@@ -122,6 +135,9 @@
     <ClInclude Include="Junker.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TPM.h" />
+    <ClInclude Include="TpmConfig.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

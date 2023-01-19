@@ -17,7 +17,9 @@ private:
     Ui::GUIClass ui;
 private slots:
     void on_addButton_clicked();
+    void on_addButtonTPM_clicked();
     void on_loadButton_clicked();
+    void on_loadButtonTPM_clicked();
     void on_saveButton_clicked();
     void on_encBox_changed();
     void on_delBox_changed();
@@ -32,4 +34,5 @@ private slots:
     void on_JunkerSemiConnectedBox_changed();
     void on_JunkerNonConnected_changed();
     void on_JunkerIncBox_changed();
+    void on_TPMBox_changed();
 };

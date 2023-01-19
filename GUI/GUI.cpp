@@ -1,13 +1,17 @@
 #include "GUI.h"
 #include "Parser.h"
 #include "Settings.h"
+#include "TPM.h"
+
 GUI::GUI(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
 	connect(ui.b_LoadFile, SIGNAL(clicked()), this, SLOT(on_loadButton_clicked()));
+	connect(ui.b_LoadFile_2, SIGNAL(clicked()), this, SLOT(on_loadButtonTPM_clicked()));
 	connect(ui.b_SaveFile, SIGNAL(clicked()), this, SLOT(on_saveButton_clicked()));
     connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(on_addButton_clicked()));
+	connect(ui.pushButton_2, SIGNAL(clicked()), this, SLOT(on_addButtonTPM_clicked()));
 	connect(ui.cb_Encryption, SIGNAL(clicked(bool)), this, SLOT(on_encBox_changed()));
 	connect(ui.cb_deleteComments, SIGNAL(clicked(bool)), this, SLOT(on_delBox_changed()));
 	connect(ui.cb_AddJunk, SIGNAL(clicked(bool)), this, SLOT(on_addJunk_changed()));
@@ -21,6 +25,7 @@ GUI::GUI(QWidget *parent)
 	connect(ui.cb_JunkerSemiConnected, SIGNAL(clicked(bool)), this, SLOT(on_JunkerSemiConnectedBox_changed()));
 	connect(ui.cb_JunkerNonConnected, SIGNAL(clicked(bool)), this, SLOT(on_JunkerNonConnected_changed()));
 	connect(ui.cb_JunkerInc, SIGNAL(clicked(bool)), this, SLOT(on_JunkerIncBox_changed()));
+	connect(ui.cb_TPM, SIGNAL(clicked(bool)), this, SLOT(on_TPMBox_changed()));
 }
 
 void GUI::on_loadButton_clicked() {
@@ -29,6 +34,43 @@ void GUI::on_loadButton_clicked() {
 
 	ui.lineEdit->setText(settings::inFileName);
 	ui.fileNameLabelIn->setText("Input File Name: " + settings::inFileName.split('/').last());
+}
+
+void GUI::on_loadButtonTPM_clicked() {
+	settings::inTPMFile = QFileDialog::getOpenFileName(this, "Open File", ".//");
+
+
+	ui.lineEdit_3->setText(settings::inTPMFile);
+}
+
+void GUI::on_addButtonTPM_clicked() {
+	if (settings::inTPMFile == "notSelected" || settings::outFileName == "notSelected") {
+		ui.textBrowser->append("Error! Wrong path selected!");
+		return;
+	}
+
+	std::wstring file_contents;
+	std::wifstream file(settings::inTPMFile.toLocal8Bit().constData());
+	if (file.is_open()) {
+		std::wstring line;
+		while (std::getline(file, line)) {
+			file_contents += line;
+		}
+		file.close();
+	}
+	else {
+		ui.textBrowser->append("Error opening TPM file");
+	}
+
+	TPM* tpm = new TPM();
+	std::wstring end;
+	end = tpm->DecryptWholeFile(file_contents);
+	//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
+
+
+	delete tpm;
+
+
 }
 
 void GUI::on_saveButton_clicked() {
@@ -138,11 +180,38 @@ void GUI::on_addButton_clicked() {
 			sumtime += time;
 		}
 
+		newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
+		delete newParser;
+
+		if (ui.cb_TPM->isChecked()) {
+			TPM* tpm = new TPM();
+			tpm->EncryptDecryptSample();
+			ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
+			/*
+			std::wstring file_contents;
+			std::wifstream file(settings::outFileName.toLocal8Bit().constData());
+			if (file.is_open()) {
+				std::wstring line;
+				while (std::getline(file, line)) {
+					file_contents += line;
+				}
+				file.close();
+			}
+			else {
+				ui.textBrowser->append("Error opening TPM file");
+			}
+
+			std::string file12 = tpm->EncryptWholeFile(file_contents, settings::outPath);
+			std::ofstream outFile(settings::outFileName.toLocal8Bit().constData());
+			outFile << file12;
+			outFile.close();*/
+			delete tpm;
+		}
+
+
 		ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
 	//	sumTimeMain += sumtime;
-		newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
 		//sumTimeMain += sumtime;
-		delete newParser;
 	//}
 		
 	ui.b_openFile->setEnabled(true);
@@ -280,4 +349,14 @@ void GUI::on_JunkerNonConnected_changed() {
 
 void GUI::on_JunkerIncBox_changed() {
 	JunkerOption(ui.cb_JunkerInc->isChecked(), 7);
+}
+
+
+void GUI::on_TPMBox_changed() {
+	if (ui.cb_TPM->isChecked()) {
+		settings::isTPMOn = true;
+	}
+	else {
+		settings::isTPMOn = false;
+	}
 }

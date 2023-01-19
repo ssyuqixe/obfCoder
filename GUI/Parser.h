@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <random>
 
 typedef std::pair<std::wstring, std::wstring> Pair;
 typedef std::multimap<std::wstring, std::wstring> MapCode;
@@ -49,6 +50,7 @@ private:
 
 
 public:
+	static std::mt19937_64 random;
 	Parser(std::string name);
 
 	std::vector<std::wstring> LoadFile(std::wifstream& iFile);
@@ -70,7 +72,8 @@ public:
 	void DeleteEnters(); 
 	void DeleteUnnecessarySpaces();
 
-	
+	std::vector<std::wstring> GetMainString();
+
 	void ChangeLoops();
 
 

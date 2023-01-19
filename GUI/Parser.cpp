@@ -3,11 +3,8 @@
 #include <map>
 #include <ctime>
 #include <codecvt>
-#include <random>
 #include "Encryption.h"
 #include "Junker.h"
-
-static std::mt19937_64 random;
 
 bool Parser::IsContinue(std::vector<indexPair> indexPosition, bool isContinue)
 {
@@ -650,6 +647,11 @@ void Parser::DeleteUnnecessarySpaces()
 	    OperatorException(line, L"; ", L";", 2, -1, indexPositions);
 		OperatorException(line, L" ;", L";", 2, -1, indexPositions);
 	}
+}
+
+std::vector<std::wstring> Parser::GetMainString()
+{
+	return this->mainString;
 }
 
 void Parser::AddExpectionsWords()
