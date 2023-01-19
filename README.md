@@ -283,4 +283,5 @@ There is also a problem with extra code that can add artymetic expressions with 
 MIT
 
 ## ACKNOWLEDGEMENTS
+This research was supported by ZUT Highfliers School (Szkoła Orłow ZUT) project, coordinated ´ by Dr. Piotr Sulikowski, within the framework of the program of the Minister of Education and Science (Grant No. MNiSW/2019/391/DIR/KH, POWR.03.01.00-00-P015/18), co-financed by the European Social Fund, the amount of financing PLN 1,704,201,66.
 \***
