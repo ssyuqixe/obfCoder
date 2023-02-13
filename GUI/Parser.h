@@ -79,7 +79,7 @@ public:
 
 	void AddJunks(int amountOfVariables, int amountOfJunk);
 
-	void AddEncryption(bool toFile = false, bool onlyFors = false);
+	void AddEncryption(bool toFile = false, bool onlyFors = false, bool isTpm = false);
 
 };
 

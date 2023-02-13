@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <codecvt>
 typedef std::pair<size_t, size_t> indexPair;
 
 const int specialVariables = 2;
@@ -17,6 +20,14 @@ struct Variable {
 
 };
 
+inline std::wstring readFileWstring(const char* filename)
+{
+	std::wifstream wif(filename);
+	wif.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
+	std::wstringstream wss;
+	wss << wif.rdbuf();
+	return wss.str();
+}
 inline int CountOfRangeChars(int startIndex, std::vector<std::wstring>& wstringTab)
 {
 	int countOfRange = 0;

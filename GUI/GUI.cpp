@@ -3,6 +3,10 @@
 #include "Settings.h"
 #include "TPM.h"
 
+
+#include <codecvt>
+
+
 GUI::GUI(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -48,28 +52,43 @@ void GUI::on_addButtonTPM_clicked() {
 		ui.textBrowser->append("Error! Wrong path selected!");
 		return;
 	}
-
-	std::wstring file_contents;
-	std::wifstream file(settings::inTPMFile.toLocal8Bit().constData());
+	ui.textBrowser->clear();
+	std::string key_contents;
+	std::ifstream file(settings::inTPMFile.toLocal8Bit().constData());
 	if (file.is_open()) {
-		std::wstring line;
+		std::string line;
 		while (std::getline(file, line)) {
-			file_contents += line;
+			key_contents += line;
 		}
 		file.close();
 	}
 	else {
-		ui.textBrowser->append("Error opening TPM file");
+		ui.textBrowser->append("Error opening TPM key file!");
 	}
 
+	std::wstring file_contents;
+	std::wifstream file2(settings::inFileName.toLocal8Bit().constData());
+	if (file2.is_open()) {
+		std::wstring line;
+		while (std::getline(file2, line)) {
+			file_contents += line;
+		}
+		file2.close();
+	}
+	else {
+		ui.textBrowser->append("Error load encrypted file!");
+	}
+
+	clock_t time = clock();
 	TPM* tpm = new TPM();
 	std::wstring end;
-	end = tpm->DecryptWholeFile(file_contents);
+	end = tpm->DecryptWholeFile(file_contents, key_contents, settings::outFileName.toLocal8Bit().constData());
+	time = clock() - time;
+	ui.textBrowser->append("Decrypted by TPM - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+	ui.textBrowser->append(QString::fromStdWString(end));
 	//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
 
-
 	delete tpm;
-
 
 }
 
@@ -157,7 +176,7 @@ void GUI::on_addButton_clicked() {
 
 		if (ui.cb_Encryption->isChecked()) {
 			time = clock();
-			newParser->AddEncryption(ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked());
+			newParser->AddEncryption(ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked(), ui.cb_TPM_Variables->isChecked());
 			time = clock() - time;
 			ui.textBrowser->append("Encryption of variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 			sumtime += time;
@@ -184,27 +203,27 @@ void GUI::on_addButton_clicked() {
 		delete newParser;
 
 		if (ui.cb_TPM->isChecked()) {
+			time = clock();
 			TPM* tpm = new TPM();
-			tpm->EncryptDecryptSample();
-			ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
-			/*
-			std::wstring file_contents;
-			std::wifstream file(settings::outFileName.toLocal8Bit().constData());
-			if (file.is_open()) {
-				std::wstring line;
-				while (std::getline(file, line)) {
-					file_contents += line;
-				}
-				file.close();
-			}
-			else {
+			//tpm->EncryptDecryptSample();
+			//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
+
+			//tpm->ArrayParameters();
+			//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
+
+			
+			std::wstring file_contents = readFileWstring(settings::outFileName.toLocal8Bit().constData());
+			if (file_contents == L"") {
 				ui.textBrowser->append("Error opening TPM file");
 			}
 
 			std::string file12 = tpm->EncryptWholeFile(file_contents, settings::outPath);
+			time = clock() - time;
+			ui.textBrowser->append("Encrypted by TPM - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+			sumtime += time;
 			std::ofstream outFile(settings::outFileName.toLocal8Bit().constData());
 			outFile << file12;
-			outFile.close();*/
+			outFile.close();
 			delete tpm;
 		}
 
@@ -226,11 +245,13 @@ void GUI::on_encBox_changed() {
 	if (ui.cb_Encryption->isChecked()) {
 		ui.cb_EncOnlyFor->setEnabled(true);
 		ui.cb_EncToFile->setEnabled(true);
+		ui.cb_TPM_Variables->setEnabled(true);
 		settings::countOfSettings++;
 	}
 	else {
 		ui.cb_EncOnlyFor->setEnabled(false);
 		ui.cb_EncToFile->setEnabled(false);
+		ui.cb_TPM_Variables->setEnabled(false);
 		settings::countOfSettings--;
 
 	}

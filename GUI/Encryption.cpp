@@ -8,6 +8,7 @@
 #include <openssl/aes.h>
 #include <openssl/crypto.h>
 #include <codecvt>
+#include "TPM.h"
 
 static std::mt19937_64 random;
 
@@ -165,7 +166,12 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 
 }
 
+void Encryption::AddTPMEncryption() {
 
+	TPM* tpm = new TPM();
+	tpm->EncryptVariables(ptr_mainString);
+	delete tpm;
+}
 
 void Encryption::EncryptValue(std::wstring valueCode, unsigned char* key, int index, std::wstring decryptStringName, int replaceIndex)
 {
@@ -274,9 +280,18 @@ std::string Encryption::RandomKey(int length, bool addDigits)
 	return key;
 }
 
-void Encryption::MakeEncryption(bool toFile, bool onlyFors)
+void Encryption::MakeEncryption(bool toFile, bool onlyFors, bool isTpm)
 {
-	AddFunctionEncryption(toFile, onlyFors);
-	std::vector<std::wstring> vector = { L"<openssl/aes.h>", L"<fstream>" , L"<string>"};
+	std::vector<std::wstring> vector(4);
+	if (isTpm == true) {
+		AddTPMEncryption();
+		vector.push_back(L"\"TPM.h\"");
+	}
+	else {
+		AddFunctionEncryption(toFile, onlyFors);
+		vector.push_back(L"<openssl/aes.h>");
+	}
+	vector.push_back(L"<fstream>");
+	vector.push_back(L"<string>");
 	AddLibraries(vector);
 }

@@ -49,9 +49,10 @@ public:
 	void EncryptDecryptSample();
 
 	std::string EncryptWholeFile(std::wstring nameOfFile, std::string outPath);
-	std::wstring DecryptWholeFile(std::wstring nameOfFile);
+	std::wstring DecryptWholeFile(std::wstring encryptedFile, std::string keyFile, std::string outPath);
 
 	TPM_HANDLE MakeStoragePrimary(AUTH_SESSION* sess = nullptr);
+	void EncryptVariables(std::vector<std::wstring>* ptr_string);
 
 protected:
 	std::string outputString;

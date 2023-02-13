@@ -1007,9 +1007,9 @@ void Parser::AddJunks(int amountOfVariables, int amountOfJunk)
 	delete junker;
 }
 
-void Parser::AddEncryption(bool toFile, bool onlyFors)
+void Parser::AddEncryption(bool toFile, bool onlyFors, bool isTpm)
 {
 	Encryption* encryption = new Encryption(&mainString);
-	encryption->MakeEncryption(toFile, onlyFors);
+	encryption->MakeEncryption(toFile, onlyFors, isTpm);
 	delete encryption;
 }
