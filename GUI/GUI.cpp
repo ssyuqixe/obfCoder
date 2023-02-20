@@ -48,48 +48,54 @@ void GUI::on_loadButtonTPM_clicked() {
 }
 
 void GUI::on_addButtonTPM_clicked() {
-	if (settings::inTPMFile == "notSelected" || settings::outFileName == "notSelected") {
-		ui.textBrowser->append("Error! Wrong path selected!");
-		return;
-	}
-	ui.textBrowser->clear();
-	std::string key_contents;
-	std::ifstream file(settings::inTPMFile.toLocal8Bit().constData());
-	if (file.is_open()) {
-		std::string line;
-		while (std::getline(file, line)) {
-			key_contents += line;
+
+	//clock_t sumTimeMain = 0;
+	//for (int i = 0; i < 25; i++) {
+		if (settings::inTPMFile == "notSelected" || settings::outFileName == "notSelected") {
+			ui.textBrowser->append("Error! Wrong path selected!");
+			return;
 		}
-		file.close();
-	}
-	else {
-		ui.textBrowser->append("Error opening TPM key file!");
-	}
-
-	std::wstring file_contents;
-	std::wifstream file2(settings::inFileName.toLocal8Bit().constData());
-	if (file2.is_open()) {
-		std::wstring line;
-		while (std::getline(file2, line)) {
-			file_contents += line;
+		ui.textBrowser->clear();
+		std::string key_contents;
+		std::ifstream file(settings::inTPMFile.toLocal8Bit().constData());
+		if (file.is_open()) {
+			std::string line;
+			while (std::getline(file, line)) {
+				key_contents += line;
+			}
+			file.close();
 		}
-		file2.close();
-	}
-	else {
-		ui.textBrowser->append("Error load encrypted file!");
-	}
+		else {
+			ui.textBrowser->append("Error opening TPM key file!");
+		}
 
-	clock_t time = clock();
-	TPM* tpm = new TPM();
-	std::wstring end;
-	end = tpm->DecryptWholeFile(file_contents, key_contents, settings::outFileName.toLocal8Bit().constData());
-	time = clock() - time;
-	ui.textBrowser->append("Decrypted by TPM - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	ui.textBrowser->append(QString::fromStdWString(end));
-	//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
+		std::wstring file_contents;
+		std::wifstream file2(settings::inFileName.toLocal8Bit().constData());
+		if (file2.is_open()) {
+			std::wstring line;
+			while (std::getline(file2, line)) {
+				file_contents += line;
+			}
+			file2.close();
+		}
+		else {
+			ui.textBrowser->append("Error load encrypted file!");
+		}
 
-	delete tpm;
+		clock_t time = clock();
+		TPM* tpm = new TPM();
+		std::wstring end;
+		end = tpm->DecryptWholeFile(file_contents, key_contents, settings::outFileName.toLocal8Bit().constData());
+		time = clock() - time;
+		ui.textBrowser->append("Decrypted by TPM - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+		ui.textBrowser->append(QString::fromStdWString(end));
+		//ui.textBrowser->append(QString::fromStdString(tpm->getOutputString()));
 
+		//sumTimeMain += time;
+		delete tpm;
+	//}
+	//ui.textBrowser->append("Total time: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
+	//ui.textBrowser->append("Mean: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 25, 'f', 4) + "s.");
 }
 
 void GUI::on_saveButton_clicked() {
@@ -108,8 +114,8 @@ void GUI::on_saveButton_clicked() {
 void GUI::on_addButton_clicked() {
 	srand(time(NULL));
 
-	clock_t sumTimeMain = 0;
-	//for (int i = 0; i < 100; i++) {
+	//clock_t sumTimeMain = 0;
+	//for (int i = 0; i < 25; i++) {
 		Parser* newParser = new Parser(settings::inFileName.toLocal8Bit().constData());
 		ui.textBrowser->clear();
 
@@ -229,13 +235,12 @@ void GUI::on_addButton_clicked() {
 
 
 		ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	//	sumTimeMain += sumtime;
 		//sumTimeMain += sumtime;
 	//}
 		
 	ui.b_openFile->setEnabled(true);
 	//ui.textBrowser->append("Total time: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	//ui.textBrowser->append("Mean: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 100, 'f', 4) + "s.");
+	//ui.textBrowser->append("Mean: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 25, 'f', 4) + "s.");
 	
 
 

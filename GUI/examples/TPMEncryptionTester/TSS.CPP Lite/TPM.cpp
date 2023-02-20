@@ -177,18 +177,18 @@ void TPM::RecoverTpm()
 void TPM::Announce(const char* testName)
 {
     //SetColor(0);
-    cout << endl;
-    cout << "================================================================================" << endl;
-    cout << "        " << testName << endl;
-    cout << "================================================================================" << endl;
-    cout << endl << flush;
+    //cout << endl;
+    //cout << "================================================================================" << endl;
+    //cout << "        " << testName << endl;
+    //cout << "================================================================================" << endl;
+    //cout << endl << flush;
     //SetColor(1);
 }
 
 
 void TPM::StartCallbacks()
 {
-    Announce("Installing callback");
+    //Announce("Installing callback");
 
     // Install a callback that is invoked after the TPM command has been executed
     tpm._SetResponseCallback(&TPM::TpmCallbackStatic, this);
@@ -196,15 +196,15 @@ void TPM::StartCallbacks()
 
 void TPM::FinishCallbacks()
 {
-    Announce("Processing callback data");
+   // Announce("Processing callback data");
 
-    cout << "Commands invoked:" << endl;
-    for (auto it = commandsInvoked.begin(); it != commandsInvoked.end(); ++it)
-        cout << dec << setfill(' ') << setw(32) << EnumToStr(it->first) << ": count = " << it->second << endl;
+    //cout << "Commands invoked:" << endl;
+    //for (auto it = commandsInvoked.begin(); it != commandsInvoked.end(); ++it)
+       // cout << dec << setfill(' ') << setw(32) << EnumToStr(it->first) << ": count = " << it->second << endl;
 
-    cout << endl << "Responses received:" << endl;
-    for (auto it = responses.begin(); it != responses.end(); ++it)
-        cout << dec << setfill(' ') << setw(32) << EnumToStr(it->first) << ": count = " << it->second << endl;
+    //cout << endl << "Responses received:" << endl;
+    //for (auto it = responses.begin(); it != responses.end(); ++it)
+       // cout << dec << setfill(' ') << setw(32) << EnumToStr(it->first) << ": count = " << it->second << endl;
 
     /*
     cout << endl << "Commands not exercised:" << endl;

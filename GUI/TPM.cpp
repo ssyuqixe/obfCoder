@@ -544,7 +544,7 @@ void TPM::EncryptVariables(std::vector<std::wstring>* ptr_string) {
 
     std::wstring decryptStringName = RandomUnicode(5, 0x0061, 0x007A) + RandomUnicode(3, 0x0030, 0x0039);
     std::wstring functionHeader = L"int " + decryptStringName + L"(std::string " + namesInTemplate[0] + L", int " + namesInTemplate[1] + L") \n{\n\0";
-    std::wstring functionBody1 = L"if (tpm == nullptr) {tpm = new TPM(); } ByteVec decoded = tpm->TPM_decrypt("+ namesInTemplate[0] +L"); unsigned char index;\0";
+    std::wstring functionBody1 = L"if (tpm == nullptr) {tpm = new TPM(); } ByteVec decoded = tpm->TPM_decrypt("+ namesInTemplate[0] +L"); unsigned char index = 0;\0";
     std::wstring functionBody2 = L"for (int i = 0; i < decoded.size() - 3; i++) {if (decoded[i] == 21 && decoded[i + 1] == 37 && decoded[i + 2] == 24){index = i;break;}}\0";
     std::wstring functionBody3 = L"int value = 0;std::string strValue = \"\";for (unsigned char i = 0; i < index; i++){strValue += decoded[i];}value = std::stoi(strValue);return value - "+ namesInTemplate[1] +L";}\0";
 
