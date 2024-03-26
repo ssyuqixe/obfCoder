@@ -71,5 +71,6 @@
         "xutility": "cpp",
         "codecvt": "cpp",
         "random": "cpp"
-    }
+    },
+    "dotnet.defaultSolution": "disable"
 }
