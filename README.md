@@ -5,23 +5,19 @@ Simple obfuscator for source code written in language C++.
 
 ### Compiling
 1. Clone or download the repository.
-2. Run obfCoder.sln preferably Visual Studio 2019.
-3. Make sure you have connected Qt Designer to your environment.
-	3.1 Qt Visual Studio Tools, which can be found in Visual Studio extensions, is helpful in connection.
-4. Make sure you have added OpenSSL libraries for Debug and Release x64. Compiled libraries are included with the project.
-	4.1 The included openSSL libraries are only for x64. I can recommend this tutorial if you want to compile them on your own.
-	Also, It is also shown here how to connect the openSSL libraries.
-		https://www.youtube.com/watch?v=PMHEoBkxYaQ 
-5. Done, the project should now compile and run.
-	5.1 To the obfCoder.exe file, add the qt dll libraries from the ./GUI/dlls folder to run the application.
-
-
+2. Open repository folder as workspace in Visual Code.
+3. Download and install Qt 5.12.2
+	3.1 Set path in CMakeLists.txt to Qt folder
+4. Install OpenSSL binaries (or compile and install)
+5. Build project.
 
 ## Technology
-- [Qt 5.9.9](https://www.qt.io/developers)
-- [OpenSSL](https://www.openssl.org/)
-- [Visual Studio 2019](https://visualstudio.microsoft.com/)
-- Language C++
+- [Qt 5.15.2](https://www.qt.io/developers)
+- [OpenSSL 3.0.12](https://www.openssl.org/)
+- [Visual Code](https://code.visualstudio.com/)
+- [CMake 3.28.1](https://cmake.org/)
+- Language C++ (14)
+- MSVC Compiler - Setup for 17.8.4 (x64 architecture)
  
 
 
