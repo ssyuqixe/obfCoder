@@ -17,29 +17,17 @@ struct Variable {
 
 };
 
-inline int CountOfRangeChars(int startIndex, std::vector<std::wstring>& wstringTab)
+inline int CountOfRangeChars(const std::wstring& wstringLine)
 {
+	if(wstringLine.empty())
+		return 0;
+	
 	int countOfRange = 0;
-	int indexHelp = 0;
-
-	while (true) {
-		if (!wstringTab[startIndex].empty() && wstringTab[startIndex].find(L"{", indexHelp) != std::string::npos) {
-			indexHelp = wstringTab[startIndex].find(L"{", indexHelp) + 1;
+	for(const auto& c : wstringLine)
+		if (c == L'{')
 			countOfRange++;
-		}
-		else
-			break;
-	}
-
-	indexHelp = 0;
-	while (true) {
-		if (!wstringTab[startIndex].empty() && wstringTab[startIndex].find(L"}", indexHelp) != std::string::npos) {
-			indexHelp = wstringTab[startIndex].find(L"}", indexHelp) + 1;
+		else if (c == L'}')
 			countOfRange--;
-		}
-		else
-			break;
-	}
 
 	return countOfRange;
 }
@@ -56,12 +44,9 @@ inline void Split(const std::wstring& str, T& cont, wchar_t wchar)
 
 }
 
-
 inline bool CheckInclude(std::wstring line)
 {
-	if (!line.empty() && line.find(L"#include") != std::wstring::npos)
-		return true;
-	return false;
+	return (!line.empty() && line.find(L"#include") != std::wstring::npos) ? true : false;
 }
 
 inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue)
@@ -111,12 +96,11 @@ inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _ch
 inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 {
 	std::wstring ustr;
+	ustr.resize(len);
 	size_t intervalLength = end - start + 1;
 
-	for (auto i = 0; i < len; i++) {
-		ustr += (rand() % intervalLength) + start;
-	}
-
+	for (int i = 0; i < len; i++)
+		ustr[i] = (wchar_t)((rand() % intervalLength) + start);
 	return ustr;
 }
 
