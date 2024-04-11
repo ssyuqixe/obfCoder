@@ -1,3 +1,0 @@
-S:/Projects/obfCoder-vscode/build/CMakeFiles/obfcoder.dir
-S:/Projects/obfCoder-vscode/build/CMakeFiles/ALL_BUILD.dir
-S:/Projects/obfCoder-vscode/build/CMakeFiles/ZERO_CHECK.dir
