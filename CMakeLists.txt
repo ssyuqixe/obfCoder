@@ -26,7 +26,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 include(windeployqt)
-include(openSSLcopy)
+#include(openSSLcopy)
 
 set_target_properties(Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
 
@@ -60,4 +60,4 @@ target_link_libraries(${PROJECT_NAME} Qt5::Widgets OpenSSL::SSL OpenSSL::Crypto)
 # Copy needed Qt libraries
 windeployqt(${PROJECT_NAME})
 # Copy needed OpenSSL library
-openSSLcopy(${PROJECT_NAME})
+# openSSLcopy(${PROJECT_NAME})
