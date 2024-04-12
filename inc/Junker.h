@@ -16,12 +16,13 @@ private:
 
 	bool FindIndexToAddJunk(int& index, int diffrence, Variable*& variable);
 	std::vector<indexPair> FindBlockedIndexForJunk();
-	void UpdateBlockedIndexs(int index, int change, std::vector<indexPair>& contBlokedSpace);
-	void AddJunk(int& index, Variable*& variable, std::wstring oper, std::vector<indexPair>& contBlokedSpace);
-	void AddJunkInc(int& index, Variable*& variable, std::vector<indexPair>& contBlokedSpace);
-	void AddForConnected(int& index, Variable*& variable, std::vector<indexPair>& contBlokedSpace);
-	void AddForSemiConnected(int& index, Variable*& variable, std::vector<indexPair>& contBlokedSpace);
-	void AddForUnconnected(int& index, std::vector<indexPair>& contBlokedSpace);
+	void UpdateBlockedIndexs(int index, int change, std::vector<indexPair>& contBlockedSpace);
+	void AddJunk(int& index, Variable*& variable, std::wstring oper, std::vector<indexPair>& contBlockedSpace);
+	void AddJunkInc(int& index, Variable*& variable, std::vector<indexPair>& contBlockedSpace);
+	void AddForConnected(int& index, Variable*& variable, std::vector<indexPair>& contBlockedSpace);
+	void AddForSemiConnected(int& index, Variable*& variable, std::vector<indexPair>& contBlockedSpace);
+	void AddForUnconnected(int& index, std::vector<indexPair>& contBlockedSpace);
+	void InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace);
 public:
 	Junker(std::vector<std::wstring>* mainString, std::vector<Variable>* variables) : ptr_mainString(mainString), ptr_variables(variables) {
 		allJunkNames.push_back(L"do");

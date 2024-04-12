@@ -3,6 +3,7 @@
 #include <vector>
 typedef std::pair<size_t, size_t> indexPair;
 
+//check later why it is hardcoded
 const int specialVariables = 2;	
 
 struct Variable {
@@ -53,21 +54,21 @@ inline bool CheckInclude(std::wstring line)
 inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue)
 {
 	std::vector<size_t> allIndexs;
-	size_t startIndex;
+	size_t startIndex = 0;
+	std::vector<indexPair> indexVector;
 
-	if (!line.empty() && line.find(_char) != std::wstring::npos) {
-		startIndex = line.find(_char);
-		if (startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') //
-			allIndexs.push_back(startIndex);
+	if(line.empty())
+		return indexVector;
 
-		while (line.find(_char, startIndex + 1) != std::wstring::npos && startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') {
-			startIndex = line.find(_char, startIndex + 1);
+	while(line.find(_char, startIndex) != std::wstring::npos)
+	{
+		if(int(startIndex) - 1 >= 0 && line[startIndex - 1] != L'\\'){
+			startIndex = line.find(_char, startIndex);
 			allIndexs.push_back(startIndex);
 		}
+		startIndex++;
 	}
 
-
-	std::vector<indexPair> indexVector;
 
 	//need to understand the logic behind it
 	if(!allIndexs.empty()){
@@ -100,15 +101,21 @@ inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 
 
 inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t end, std::vector<std::wstring> container) {
+
+	bool isUnique = false;
 	std::wstring newString = RandomUnicode(len, start, end);
-	if (container.empty() == false) {
+	if (container.empty())
+		return newString;
+	//I assume that len is long enough to cover all generations
+	//Maybe in future add mechanism to check if all possible values are used
+	do {
+		isUnique = true;
 		for (int i = 0; i < container.size(); i++)
-			if (container[i].compare(newString) == 0) {
-				newString = RandomUnicode(len, start, end);
-				//??
-				i = 0;
+			if (container[i].compare(newString) == 0){
+				isUniuqe = false;
+				newString =  RandomUnicode(len, start, end);
 				break;
 			}
-	}
+	} while(isUnique == false);
 	return newString;
 }

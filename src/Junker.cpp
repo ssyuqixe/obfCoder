@@ -9,7 +9,7 @@
 
 void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 {
-	//change later the random engine
+	// change later the random engine
 	srand(time(NULL));
 	int _amountOfVariables = 0;
 	while (_amountOfVariables < amountOfVariables && ptr_variables->size() > specialVariables)
@@ -19,20 +19,18 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 		bool isVariable = false;
 		int diffrence = 1;
 		Variable *variableData = nullptr;
-		std::vector<indexPair> contBlokedSpace = FindBlockedIndexForJunk();
+		std::vector<indexPair> contBlockedSpace = FindBlockedIndexForJunk();
 
 		unsigned char isIndexBlocked = 0;
 		bool downIndexBlocked = false;
 		bool upIndexBlocked = false;
 
-		for (auto const &pair : contBlokedSpace)
-		{
+		for (auto const &pair : contBlockedSpace)
 			if (index >= pair.first || index <= pair.second)
 			{
 				isIndexBlocked = 1;
 				break;
 			}
-		}
 		if (isIndexBlocked == 0)
 			for (auto const &variable : *ptr_variables)
 				isVariable = FindIndexToAddJunk(index, 0, variableData);
@@ -42,7 +40,7 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 			downIndexBlocked = false;
 			upIndexBlocked = false;
 
-			for (auto const &pair : contBlokedSpace)
+			for (auto const &pair : contBlockedSpace)
 			{
 				int plusindex = index + diffrence;
 				int minusindex = index - diffrence;
@@ -68,33 +66,49 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 				throw "Not found variables";
 		}
 		// std::sort(settings::junkerOptions.begin(), settings::junkerOptions.end());
-		int option;
+		int option = -1;
 
+		bool isAllFalse = true;
+		for(const auto &option : settings::junkerOptions)
+			if(option == true){
+				isAllFalse = false;
+				break;
+				}
+		
+		if(!isAllFalse)
 		for (int i = 0; i < amountOfJunk; i++)
 		{
-			option = settings::junkerOptions[(rand() % settings::junkerOptions.size())];
-			switch (option - 1)
+			option = -1;
+			
+			while(option == -1){
+				option = rand() % settings::junkerOptions.size();
+				if(settings::junkerOptions[option] == false)
+					option = -1;
+			}
+			switch (option)
 			{
 			case 0:
-				AddJunk(index, variableData, L"+=", contBlokedSpace);
+				AddJunk(index, variableData, L"+=", contBlockedSpace);
 				break;
 			case 1:
-				AddJunk(index, variableData, L"-=", contBlokedSpace);
+				AddJunk(index, variableData, L"-=", contBlockedSpace);
 				break;
 			case 2:
-				AddJunk(index, variableData, L"*=", contBlokedSpace);
+				AddJunk(index, variableData, L"*=", contBlockedSpace);
 				break;
 			case 3:
-				AddForConnected(index, variableData, contBlokedSpace);
+				AddForConnected(index, variableData, contBlockedSpace);
 				break;
 			case 4:
-				AddForSemiConnected(index, variableData, contBlokedSpace);
+				AddForSemiConnected(index, variableData, contBlockedSpace);
 				break;
 			case 5:
-				AddForUnconnected(index, contBlokedSpace);
+				AddForUnconnected(index, contBlockedSpace);
 				break;
 			case 6:
-				AddJunkInc(index, variableData, contBlokedSpace);
+				AddJunkInc(index, variableData, contBlockedSpace);
+				break;
+			default:
 				break;
 			}
 		}
@@ -148,7 +162,7 @@ bool Junker::FindIndexToAddJunk(int &index, int diffrence, Variable *&variableDa
 
 std::vector<indexPair> Junker::FindBlockedIndexForJunk()
 {
-	std::vector<indexPair> contBlokedSpace;
+	std::vector<indexPair> contBlockedSpace;
 	int countOfRange = 0;
 	int indexStart = -1;
 	bool isInRange = false;
@@ -167,17 +181,17 @@ std::vector<indexPair> Junker::FindBlockedIndexForJunk()
 		if (isInRange && sumCountOfRange < 0 && countOfRange == 0)
 		{
 			isInRange = false;
-			contBlokedSpace.push_back(indexPair(indexStart, i));
+			contBlockedSpace.push_back(indexPair(indexStart, i));
 			indexStart = -1;
 		}
 	}
 
-	return contBlokedSpace;
+	return contBlockedSpace;
 }
 
-void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &contBlokedSpace)
+void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &contBlockedSpace)
 {
-	for (auto &pair : contBlokedSpace)
+	for (auto &pair : contBlockedSpace)
 		if (index < pair.first)
 		{
 			pair.first += change;
@@ -185,7 +199,7 @@ void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &
 		}
 }
 
-void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::vector<indexPair> &contBlokedSpace)
+void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::vector<indexPair> &contBlockedSpace)
 {
 	// std::wstring randomName = randomUnicode(7, 0x0041, 0x005A);
 	wchar_t random = (rand() % 9) + 49;
@@ -208,11 +222,11 @@ void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::ve
 	ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk);
 	ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
 
-	UpdateBlockedIndexs(index, 2, contBlokedSpace);
+	UpdateBlockedIndexs(index, 2, contBlockedSpace);
 	index += 1; //+
 }
 
-void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> &contBlokedSpace)
+void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
 {
 	std::wstring junk1 = L"\t " + variable->name + L" ++ ;\n\0";
 	std::wstring junk2 = L"\t " + variable->name + L" -- ;\n\0";
@@ -227,11 +241,11 @@ void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> 
 		ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
 		index += 1;
 	}
-	UpdateBlockedIndexs(index, countOfAdd, contBlokedSpace);
+	UpdateBlockedIndexs(index, countOfAdd, contBlockedSpace);
 	index += countOfAdd;
 }
 
-void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlokedSpace)
+void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
 {
 
 	wchar_t random = (rand() % 10) + 48;
@@ -247,16 +261,12 @@ void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexP
 	junkCode.push_back(L"\t " + variable->name + L" ++; }\n\0");
 	junkCode.push_back(L"\t " + variable->name + L" -= " + random + L";\n\0");
 
-	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
-		index++;
 
-	for(auto i = 0; i < junkCode.size(); i++)
-		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
-	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
-	index += (int)junkCode.size();
+	InsertJunkToCode(junkCode, index, contBlockedSpace);
+
 }
 
-void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlokedSpace)
+void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
 {
 
 	wchar_t random = (rand() % 10) + 48;
@@ -270,21 +280,15 @@ void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<in
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::vector<std::wstring> junkCode;
 	junkCode.push_back(L" \n\t int " + addvariable1 + L" = 0; \n");
-	junkCode.push_back( L"\t bool " + addvariable2 + L" = true; \n");
-	junkCode.push_back( L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n");
-	junkCode.push_back( L"\t " + addvariable1 + L" += (int) " + variable->name + L" ;\n");
-	junkCode.push_back( L"\t if( " + addvariable1 + L" ) " + addvariable2 + L" = false; \n } \n");
+	junkCode.push_back(L"\t bool " + addvariable2 + L" = true; \n");
+	junkCode.push_back(L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n");
+	junkCode.push_back(L"\t " + addvariable1 + L" += (int) " + variable->name + L" ;\n");
+	junkCode.push_back(L"\t if( " + addvariable1 + L" ) " + addvariable2 + L" = false; \n } \n");
 
-	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
-		index++;
-
-	for(auto i = 0; i < junkCode.size(); i++)
-		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
-	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
-	index += (int)junkCode.size();
+	InsertJunkToCode(junkCode, index, contBlockedSpace);
 }
 
-void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlokedSpace)
+void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSpace)
 {
 	wchar_t random = (rand() % 10) + 48;
 	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
@@ -297,8 +301,8 @@ void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlokedSpa
 	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 
-	//change later junk to better word
-	//also find better way to paste templates (e.g ''' ''' like python or load from file)
+	// change later junk to better word
+	// also find better way to paste templates (e.g ''' ''' like python or load from file)
 	std::vector<std::wstring> junkCode;
 	junkCode.push_back(L" \n \t int " + addvariable1 + L" = 0; \n\0");
 	junkCode.push_back(L"\t int " + addvariable2 + L" = 1; \n\0");
@@ -306,11 +310,15 @@ void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlokedSpa
 	junkCode.push_back(L"\t " + addvariable1 + L" *= " + addvariable2 + L" ;\n\0");
 	junkCode.push_back(L"\t switch( " + addvariable1 + L" )  { \n case 0: " + addvariable2 + L" = 0; \n break; \n case 1: " + addvariable2 + L" = 1; \n break;\n case 3: " + addvariable2 + L" = 3; \n break; \n case 7: " + addvariable2 + L" = 7; \n break; \n case 10: " + addvariable2 + L" = 10; \n break; \n default: " + addvariable2 + L" = 14; \n break; }\n }\n\0");
 
+	InsertJunkToCode(junkCode, index, contBlockedSpace);
+}
+
+void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace){
 	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
-	for(auto i = 0; i < junkCode.size(); i++)
+	for (auto i = 0; i < junkCode.size(); i++)
 		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
-	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
+	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlockedSpace);
 	index += (int)junkCode.size();
 }

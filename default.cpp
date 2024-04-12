@@ -21,26 +21,30 @@ bool checkWW( double tab [ ] , int size ) {
 
 
 int findMaxElementIndex( double tab [ ] , int size ) {
- 
- 	 int vjurk = 0; 
-	 int epwty = 1; 
-	 int cddus ; 
-	 for( cddus = 0; cddus < 8; cddus ++) {
-	 vjurk *= epwty ;
-	 switch( vjurk )  { 
- case 0: epwty = 0; 
- break; 
- case 1: epwty = 1; 
- break;
- case 3: epwty = 3; 
- break; 
- case 7: epwty = 7; 
- break; 
- case 10: epwty = 10; 
- break; 
- default: epwty = 14; 
- break; }
- }
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size ++ ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
+	 size -- ;
  	 int temp = tab [ 0 ] ; 
  	 int index = 0 ; 
  	 for ( int i = 0 ; i < size ; i ++ )

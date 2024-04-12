@@ -70,7 +70,7 @@ void GUI::on_addButton_clicked()
 		return;
 	}
 
-	ui.b_openFile->setEnabled(false);
+	//ui.b_openFile->setEnabled(false);
 	clock_t time;
 	clock_t sumtime = 0;
 	if (ui.cb_deleteComments->isChecked())
@@ -255,67 +255,46 @@ void GUI::on_chgVarBox_changed()
 
 void GUI::on_openButton_clicked()
 {
-	// notepad to delete in future
-	if (QFileInfo::exists(settings::outFileName))
-	{
-		QProcess *proc = new QProcess(this);
-		proc->start("notepad.exe " + settings::outFileName);
-	}
-	else
-		ui.textBrowser->append("File doesn't exist!");
+	ui.textBrowser->append("Debug: setted");
+
 }
 
 void JunkerOption(bool isChecked, int value)
 {
-	if (isChecked)
-	{
-		settings::junkerOptions.push_back(value);
-	}
-	else
-	{
-		for (int i = 0; i < settings::junkerOptions.size(); i++)
-		{
-			if (settings::junkerOptions[i] == value)
-			{
-
-				settings::junkerOptions.erase(settings::junkerOptions.begin() + i);
-				break;
-			}
-		}
-	}
+	settings::junkerOptions[value] = (isChecked) ? true : false;
 }
 
 void GUI::on_JunkerSumBox_changed()
 {
-	JunkerOption(ui.cb_JunkerSum->isChecked(), 1);
+	JunkerOption(ui.cb_JunkerSum->isChecked(), 0);
 }
 
 void GUI::on_JunkerSubBox_changed()
 {
-	JunkerOption(ui.cb_JunkerSub->isChecked(), 2);
+	JunkerOption(ui.cb_JunkerSub->isChecked(), 1);
 }
 
 void GUI::on_JunkerMulBox_changed()
 {
-	JunkerOption(ui.cb_JunkerMul->isChecked(), 3);
+	JunkerOption(ui.cb_JunkerMul->isChecked(), 2);
 }
 
 void GUI::on_JunkerConnectedBox_changed()
 {
-	JunkerOption(ui.cb_JunkerConnected->isChecked(), 4);
+	JunkerOption(ui.cb_JunkerConnected->isChecked(), 3);
 }
 
 void GUI::on_JunkerSemiConnectedBox_changed()
 {
-	JunkerOption(ui.cb_JunkerSemiConnected->isChecked(), 5);
+	JunkerOption(ui.cb_JunkerSemiConnected->isChecked(), 4);
 }
 
 void GUI::on_JunkerNonConnected_changed()
 {
-	JunkerOption(ui.cb_JunkerNonConnected->isChecked(), 6);
+	JunkerOption(ui.cb_JunkerNonConnected->isChecked(), 5);
 }
 
 void GUI::on_JunkerIncBox_changed()
 {
-	JunkerOption(ui.cb_JunkerInc->isChecked(), 7);
+	JunkerOption(ui.cb_JunkerInc->isChecked(), 6);
 }

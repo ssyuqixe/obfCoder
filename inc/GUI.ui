@@ -507,7 +507,7 @@
    </widget>
    <widget class="QPushButton" name="b_openFile">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -518,7 +518,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Open</string>
+     <string>Debug</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton">

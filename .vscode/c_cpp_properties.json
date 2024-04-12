@@ -8,10 +8,13 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE", 
+                "_WINDOWS"
             ],
-            "configurationProvider": "ms-vscode.cmake-tools",
-            "cppStandard": "c++20"
+            "configurationProvider": "ms-vscode.cpptools",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-msvc-x64",
+            "compilerPath": "D:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/cl.exe"
         }
     ],
     "version": 4

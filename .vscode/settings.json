@@ -72,5 +72,6 @@
         "codecvt": "cpp",
         "random": "cpp"
     },
-    "dotnet.defaultSolution": "disable"
+    "dotnet.defaultSolution": "disable",
+    "C_Cpp.errorSquiggles": "disabled"
 }
