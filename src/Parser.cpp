@@ -57,11 +57,9 @@ void Parser::SaveFile(std::string name)
 	ofs.imbue(loc);
 
 	this->oFile.open(name);
-	for (auto &line : this->mainString)
-	{
+	for (const auto &line : this->mainString)
 		ofs << line << std::flush;
-	}
-
+		
 	this->oFile.close();
 }
 

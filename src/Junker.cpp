@@ -9,6 +9,7 @@
 
 void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 {
+	//change later the random engine
 	srand(time(NULL));
 	int _amountOfVariables = 0;
 	while (_amountOfVariables < amountOfVariables && ptr_variables->size() > specialVariables)
@@ -177,13 +178,11 @@ std::vector<indexPair> Junker::FindBlockedIndexForJunk()
 void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &contBlokedSpace)
 {
 	for (auto &pair : contBlokedSpace)
-	{
 		if (index < pair.first)
 		{
 			pair.first += change;
 			pair.second += change;
 		}
-	}
 }
 
 void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::vector<indexPair> &contBlokedSpace)
@@ -243,19 +242,18 @@ void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexP
 	}
 	allJunkNames.push_back(uniname);
 
-	std::wstring junk = L" \n\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) { \n \0";
-	std::wstring junk2 = L"\t " + variable->name + L" ++; }\n\0";
-	std::wstring junk3 = L"\t " + variable->name + L" -= " + random + L";\n\0";
+	std::vector<std::wstring> junkCode;
+	junkCode.push_back(L" \n\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) { \n \0");
+	junkCode.push_back(L"\t " + variable->name + L" ++; }\n\0");
+	junkCode.push_back(L"\t " + variable->name + L" -= " + random + L";\n\0");
 
 	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
-	ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 3, junk3);
-
-	UpdateBlockedIndexs(index, 3, contBlokedSpace);
-	index += 3;
+	for(auto i = 0; i < junkCode.size(); i++)
+		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
+	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
+	index += (int)junkCode.size();
 }
 
 void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlokedSpace)
@@ -270,22 +268,20 @@ void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<in
 	allJunkNames.push_back(uniname);
 	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring junk = L" \n\t int " + addvariable1 + L" = 0; \n";
-	std::wstring junk2 = L"\t bool " + addvariable2 + L" = true; \n";
-	std::wstring junk3 = L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n";
-	std::wstring junk4 = L"\t " + addvariable1 + L" += (int) " + variable->name + L" ;\n";
-	std::wstring junk5 = L"\t if( " + addvariable1 + L" ) " + addvariable2 + L" = false; \n } \n";
+	std::vector<std::wstring> junkCode;
+	junkCode.push_back(L" \n\t int " + addvariable1 + L" = 0; \n");
+	junkCode.push_back( L"\t bool " + addvariable2 + L" = true; \n");
+	junkCode.push_back( L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n");
+	junkCode.push_back( L"\t " + addvariable1 + L" += (int) " + variable->name + L" ;\n");
+	junkCode.push_back( L"\t if( " + addvariable1 + L" ) " + addvariable2 + L" = false; \n } \n");
 
 	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
-	ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 3, junk3);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 4, junk4);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 5, junk5);
-	UpdateBlockedIndexs(index, 5, contBlokedSpace);
-	index += 5;
+	for(auto i = 0; i < junkCode.size(); i++)
+		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
+	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
+	index += (int)junkCode.size();
 }
 
 void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlokedSpace)
@@ -300,20 +296,21 @@ void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlokedSpa
 
 	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring junk = L" \n \t int " + addvariable1 + L" = 0; \n\0";
-	std::wstring junk2 = L"\t int " + addvariable2 + L" = 1; \n\0";
-	std::wstring junk3 = L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n\0";
-	std::wstring junk4 = L"\t " + addvariable1 + L" *= " + addvariable2 + L" ;\n\0";
-	std::wstring junk5 = L"\t switch( " + addvariable1 + L" )  { \n case 0: " + addvariable2 + L" = 0; \n break; \n case 1: " + addvariable2 + L" = 1; \n break;\n case 3: " + addvariable2 + L" = 3; \n break; \n case 7: " + addvariable2 + L" = 7; \n break; \n case 10: " + addvariable2 + L" = 10; \n break; \n default: " + addvariable2 + L" = 14; \n break; }\n }\n\0";
+
+	//change later junk to better word
+	//also find better way to paste templates (e.g ''' ''' like python or load from file)
+	std::vector<std::wstring> junkCode;
+	junkCode.push_back(L" \n \t int " + addvariable1 + L" = 0; \n\0");
+	junkCode.push_back(L"\t int " + addvariable2 + L" = 1; \n\0");
+	junkCode.push_back(L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n\0");
+	junkCode.push_back(L"\t " + addvariable1 + L" *= " + addvariable2 + L" ;\n\0");
+	junkCode.push_back(L"\t switch( " + addvariable1 + L" )  { \n case 0: " + addvariable2 + L" = 0; \n break; \n case 1: " + addvariable2 + L" = 1; \n break;\n case 3: " + addvariable2 + L" = 3; \n break; \n case 7: " + addvariable2 + L" = 7; \n break; \n case 10: " + addvariable2 + L" = 10; \n break; \n default: " + addvariable2 + L" = 14; \n break; }\n }\n\0");
 
 	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
-	ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 3, junk3);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 4, junk4);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 5, junk5);
-	UpdateBlockedIndexs(index, 5, contBlokedSpace);
-	index += 5;
+	for(auto i = 0; i < junkCode.size(); i++)
+		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
+	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlokedSpace);
+	index += (int)junkCode.size();
 }

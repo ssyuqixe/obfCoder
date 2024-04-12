@@ -8,220 +8,230 @@
 
 
 
-bool checkWW ( double 戂 [ ] , int 亙 ) { 
- 	 for ( int 啃 = 0 ; 啃 < 亙 ; 啃 ++ ) 
- 	 { 
- 	 	 if ( 戂 [ 啃 ] > 0 ) { 
- 	 	 	 return 1 ; 
- 	 	 } 
- 	 } 
- 	 return 0 ; 
- } 
+bool checkWW( double tab [ ] , int size ) {
+ 	 for ( int i = 0 ; i < size ; i ++ )
+ 	 {
+ 	 	 if ( tab [ i ] > 0 ) {
+ 	 	 	 return true ; 
+ 	 	 }
+ 	 }
+ 	 return false ; 
+}
 
 
 
-int findMaxElementIndex ( double 戂 [ ] , int 亙 ) { 
- 	 int 伛 = 戂 [ 0 ] ; 
- 	 int 僘 = 0 ; 
- 	 for ( int 啃 = 0 ; 啃 < 亙 ; 啃 ++ ) 
- 	 { 
- 	 	 if ( 伛 < 戂 [ 啃 ] ) { 
- 	 	 	 伛 = 戂 [ 啃 ] ; 
- 	 	 	 僘 = 啃 ; 
- 	 	 } 
- 	 } 
- 	 return 僘 ; 
- } 
+int findMaxElementIndex( double tab [ ] , int size ) {
+ 
+ 	 int vjurk = 0; 
+	 int epwty = 1; 
+	 int cddus ; 
+	 for( cddus = 0; cddus < 8; cddus ++) {
+	 vjurk *= epwty ;
+	 switch( vjurk )  { 
+ case 0: epwty = 0; 
+ break; 
+ case 1: epwty = 1; 
+ break;
+ case 3: epwty = 3; 
+ break; 
+ case 7: epwty = 7; 
+ break; 
+ case 10: epwty = 10; 
+ break; 
+ default: epwty = 14; 
+ break; }
+ }
+ 	 int temp = tab [ 0 ] ; 
+ 	 int index = 0 ; 
+ 	 for ( int i = 0 ; i < size ; i ++ )
+ 	 {
+ 	 	 if ( temp < tab [ i ] ) {
+ 	 	 	 temp = tab [ i ] ; 
+ 	 	 	 index = i ; 
+ 	 	 }
+ 	 }
+ 	 return index ; 
+}
 
-int findMinElementIndex ( double 戂 [ ] , int 亙 ) { 
- 	 int 伛 = 戂 [ 0 ] ; 
- 	 int 僘 = 0 ; 
- 	 for ( int 啃 = 0 ; 啃 < 亙 ; 啃 ++ ) 
- 	 { 
- 	 	 if ( 伛 > 戂 [ 啃 ] && 戂 [ 啃 ] > 0 ) { 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 ++ ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
-	 啃 -- ; 
- 	 	 	 伛 = 戂 [ 啃 ] ; 
- 	 	 	 僘 = 啃 ; 
- 	 	 } 
- 	 } 
+int findMinElementIndex( double tab [ ] , int size ) {
+ 	 int temp = tab [ 0 ] ; 
+ 	 int index = 0 ; 
+ 	 for ( int i = 0 ; i < size ; i ++ )
+ 	 {
+ 	 	 if ( temp > tab [ i ] && tab [ i ] > 0 ) {
+ 	 	 	 temp = tab [ i ] ; 
+ 	 	 	 index = i ; 
+ 	 	 }
+ 	 }
 
- 	 return 僘 ; 
- } 
+ 	 return index ; 
+}
 
-int main ( ) { 
- 	 int 墒 = 0 ; 
- 	 int 外 = 0 ; 
- 	 double ** 岶 = nullptr ; 
- 	 double * 愿 = nullptr ; 
+int main( ) {
+ 	 int m = 0 ; 
+ 	 int n = 0 ; 
+ 	 double ** A = nullptr ; 
+ 	 double * B = nullptr ; 
 
- 	 double * 侔 = nullptr ; 
- 	 double * 崶 = nullptr ; 
+ 	 double * Cj = nullptr ; 
+ 	 double * Cb = nullptr ; 
 
- 	 double * 儢 = nullptr ; ; 
+ 	 double * ww = nullptr ; ; 
 
- 	 std::ifstream inFile ( "simplex.txt" ) ; 
- 	 if ( inFile . is_open ( ) ) { 
- 	 	 inFile >> 墒 >> 外 ; 
+ 	 std::ifstream inFile( "simplex.txt" ) ; 
+ 	 if ( inFile . is_open( ) ) {
+ 	 	 inFile >> m >> n ; 
 
- 	 	 岶 = new double * [ 墒 ] ; 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 岶 [ 啃 ] = new double [ 外 ] ; 
- 	 	 } 
+ 	 	 A = new double * [ m ] ; 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 A [ i ] = new double [ n ] ; 
+ 	 	 }
 
-for ( int 妈 = 0 ; 妈 < ( 墒 * 外 ) ; 妈 ++ ) 
- 	 	 { 
- 	 	 	 
- 	 	 	 	 inFile >> 岶 [ ( 妈 / 外 ) ] [ ( 妈 % 外 ) ] ; 
- 	 	 	 
- 	 	 } 
+for( int t = 0 ; t < ( m * n ) ; t ++ )
+ 	 	 {
+	 if( t % ( n ) == 0 )
+{
+ 	 	 	  
+ 	 	 	 	 inFile >> A [  ( t / n )  ] [  ( t % n )  ] ; 
+ 	 	 	  
+}
+ 	 	 }
 
- 	 	 愿 = new double [ 墒 ] ; 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 inFile >> 愿 [ 啃 ] ; 
- 	 	 } 
+ 	 	 B = new double [ m ] ; 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 inFile >> B [ i ] ; 
+ 	 	 }
 
- 	 	 侔 = new double [ 外 ] ; 
- 	 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 inFile >> 侔 [ 啃 ] ; 
- 	 	 } 
+ 	 	 Cj = new double [ n ] ; 
+ 	 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 	 {
+ 	 	 	 inFile >> Cj [ i ] ; 
+ 	 	 }
 
- 	 	 崶 = new double [ 墒 ] ; 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 inFile >> 崶 [ 啃 ] ; 
- 	 	 } 
+ 	 	 Cb = new double [ m ] ; 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 inFile >> Cb [ i ] ; 
+ 	 	 }
 
- 	 	 儢 = new double [ 外 ] ; 
- 	 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 inFile >> 儢 [ 啃 ] ; 
- 	 	 } 
+ 	 	 ww = new double [ n ] ; 
+ 	 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 	 {
+ 	 	 	 inFile >> ww [ i ] ; 
+ 	 	 }
 
 
- 	 	 inFile . close ( ) ; 
- 	 } 
- 	 else { 
+ 	 	 inFile . close( ) ; 
+ 	 }
+ 	 else {
  	 	 std::cout << "Cant open the file" << std::endl ; 
  	 	 return 0 ; 
- 	 } 
+ 	 }
 
 
- 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 { 
- 	 	 儢 [ 啃 ] = 侔 [ 啃 ] ; 
- 	 } 
+ 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 {
+ 	 	 ww [ i ] = Cj [ i ] ; 
+ 	 }
 
- 	 double 叽 = 0 ; 
+ 	 double F = 0 ; 
 
- 	 bool 傉 = 0 ; 
+ 	 bool isFinished = false ; 
 
- 	 while ( checkWW ( 儢 , 外 ) ) { 
- 	 	 int 嘠 = findMaxElementIndex ( 儢 , 外 ) ; 
+ 	 while ( checkWW( ww , n ) ) {
+ 	 	 int KK = findMaxElementIndex( ww , n ) ; 
 
- 	 	 double * 崚 = new double [ 墒 ] ; 
+ 	 	 double * quotient = new double [ m ] ; 
 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 崚 [ 啃 ] = 愿 [ 啃 ] / 岶 [ 啃 ] [ 嘠 ] ; 
- 	 	 } 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 quotient [ i ] = B [ i ] / A [ i ] [ KK ] ; 
+ 	 	 }
 
- 	 	 int 亷 = findMinElementIndex ( 崚 , 墒 ) ; 
- 	 	 delete [ ] 崚 ; 
+ 	 	 int WK = findMinElementIndex( quotient , m ) ; 
+ 	 	 delete [ ] quotient ; 
 
- 	 	 崶 [ 亷 ] = 侔 [ 嘠 ] ; 
+ 	 	 Cb [ WK ] = Cj [ KK ] ; 
 
- 	 	 double 嶲 = 岶 [ 亷 ] [ 嘠 ] ; 
+ 	 	 double ER = A [ WK ] [ KK ] ; 
 
- 	 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 岶 [ 亷 ] [ 啃 ] = 岶 [ 亷 ] [ 啃 ] / 嶲 ; 
- 	 	 } 
- 	 	 愿 [ 亷 ] = 愿 [ 亷 ] / 嶲 ; 
+ 	 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 	 {
+ 	 	 	 A [ WK ] [ i ] = A [ WK ] [ i ] / ER ; 
+ 	 	 }
+ 	 	 B [ WK ] = B [ WK ] / ER ; 
 
- 	 	 double 伛 = 0 ; 
+ 	 	 double temp = 0 ; 
 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 if ( 啃 != 亷 ) { 
- 	 	 	 	 伛 = 岶 [ 啃 ] [ 嘠 ] / 岶 [ 亷 ] [ 嘠 ] ; 
- 	 	 	 	 for ( int 卽 = 0 ; 卽 < 外 ; 卽 ++ ) 
- 	 	 	 	 { 
- 	 	 	 	 	 岶 [ 啃 ] [ 卽 ] = 岶 [ 啃 ] [ 卽 ] - 伛 * 岶 [ 亷 ] [ 卽 ] ; 
- 	 	 	 	 } 
- 	 	 	 	 愿 [ 啃 ] = 愿 [ 啃 ] - 伛 * 愿 [ 亷 ] ; 
- 	 	 	 } 
- 	 	 } 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 if ( i != WK ) {
+ 	 	 	 	 temp = A [ i ] [ KK ] / A [ WK ] [ KK ] ; 
+ 	 	 	 	 for ( int j = 0 ; j < n ; j ++ )
+ 	 	 	 	 {
+ 	 	 	 	 	 A [ i ] [ j ] = A [ i ] [ j ] - temp * A [ WK ] [ j ] ; 
+ 	 	 	 	 }
+ 	 	 	 	 B [ i ] = B [ i ] - temp * B [ WK ] ; 
+ 	 	 	 }
+ 	 	 }
 
- 	 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 叽 += 崶 [ 啃 ] * 愿 [ 啃 ] ; 
- 	 	 } 
+ 	 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 	 {
+ 	 	 	 F += Cb [ i ] * B [ i ] ; 
+ 	 	 }
 
- 	 	 double * 愎 = new double [ 外 ] ; 
-for ( int 妈 = 0 ; 妈 < ( 外 * 墒 ) ; 妈 ++ ) 
- 	 	 { 
-	 if ( 妈 % ( 墒 ) == 0 ) 
- { 
- 	 	 	 愎 [ ( 妈 / 墒 ) ] = 0 ; 
- } 
- 	 	 	 
- 	 	 	 	 愎 [ ( 妈 / 墒 ) ] += 崶 [ ( 妈 % 墒 ) ] * 岶 [ ( 妈 % 墒 ) ] [ ( 妈 / 墒 ) ] ; 
- 	 	 	 
- 	 	 } 
+ 	 	 double * product = new double [ n ] ; 
+for( int t = 0 ; t < ( n * m ) ; t ++ )
+ 	 	 {
+	 if( t % ( m ) == 0 )
+{
+ 	 	 	 product [  ( t / m )  ] = 0 ; 
+}
+	 if( t % ( m ) == 0 )
+{
+ 	 	 	  
+ 	 	 	 	 product [  ( t / m )  ] += Cb [  ( t % m )  ] * A [  ( t % m )  ] [  ( t / m )  ] ; 
+ 	 	 	  
+}
+ 	 	 }
 
- 	 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 	 { 
- 	 	 	 儢 [ 啃 ] = 侔 [ 啃 ] - 愎 [ 啃 ] ; 
- 	 	 } 
+ 	 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 	 {
+ 	 	 	 ww [ i ] = Cj [ i ] - product [ i ] ; 
+ 	 	 }
 
 
 
- 	 } 
+ 	 }
 
- 	 double 嚮 = 0 ; 
- 	 double 仳 = 0 ; 
+ 	 double x1 = 0 ; 
+ 	 double x2 = 0 ; 
 
- 	 for ( int 啃 = 0 ; 啃 < 外 ; 啃 ++ ) 
- 	 { 
- 	 	 if ( 崶 [ 啃 ] == 侔 [ 0 ] ) { 
- 	 	 	 嚮 = 愿 [ 啃 ] ; 
- 	 	 } 
- 	 	 if ( 崶 [ 啃 ] == 侔 [ 1 ] ) { 
- 	 	 	 仳 = 愿 [ 啃 ] ; 
- 	 	 } 
- 	 } 
+ 	 for ( int i = 0 ; i < n ; i ++ )
+ 	 {
+ 	 	 if ( Cb [ i ] == Cj [ 0 ] ) {
+ 	 	 	 x1 = B [ i ] ; 
+ 	 	 }
+ 	 	 if ( Cb [ i ] == Cj [ 1 ] ) {
+ 	 	 	 x2 = B [ i ] ; 
+ 	 	 }
+ 	 }
 
- 	 std::cout << "Result: x1 = " << 嚮 << " x2 = " << 仳 << std::endl ; 
+ 	 std::cout << "Result: x1 = " << x1 << " x2 = " << x2 << std::endl ; 
 
- 	 for ( int 啃 = 0 ; 啃 < 墒 ; 啃 ++ ) 
- 	 { 
- 	 	 delete [ ] 岶 [ 啃 ] ; 
- 	 } 
- 	 delete [ ] 岶 ; 
- 	 delete [ ] 愿 ; 
- 	 delete [ ] 侔 ; 
- 	 delete [ ] 崶 ; 
- 	 delete [ ] 儢 ; 
+ 	 for ( int i = 0 ; i < m ; i ++ )
+ 	 {
+ 	 	 delete [ ] A [ i ] ; 
+ 	 }
+ 	 delete [ ] A ; 
+ 	 delete [ ] B ; 
+ 	 delete [ ] Cj ; 
+ 	 delete [ ] Cb ; 
+ 	 delete [ ] ww ; 
 
 
 
  	 return 0 ; 
- } 
+}

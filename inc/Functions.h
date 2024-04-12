@@ -3,7 +3,7 @@
 #include <vector>
 typedef std::pair<size_t, size_t> indexPair;
 
-const int specialVariables = 2;
+const int specialVariables = 2;	
 
 struct Variable {
 	int isPointer;
@@ -49,11 +49,10 @@ inline bool CheckInclude(std::wstring line)
 	return (!line.empty() && line.find(L"#include") != std::wstring::npos) ? true : false;
 }
 
+//check
 inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue)
 {
 	std::vector<size_t> allIndexs;
-
-
 	size_t startIndex;
 
 	if (!line.empty() && line.find(_char) != std::wstring::npos) {
@@ -70,23 +69,18 @@ inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _ch
 
 	std::vector<indexPair> indexVector;
 
-	if (!allIndexs.empty())
-		if (isContinue) {
+	//need to understand the logic behind it
+	if(!allIndexs.empty()){
+		if(isContinue)
 			indexVector.push_back(indexPair(0, allIndexs[0]));
-			for (size_t i = 1; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
 
-
-			if (!(allIndexs.size() % 2))
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-		else {
-			for (size_t i = 0; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (allIndexs.size() % 2)
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
+		for(size_t i = (int)(isContinue); i < allIndexs.size() - 1; i += 2)
+			indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
+		if(isContinue && !(allIndexs.size() % 2))
+			indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
+		else if(allIndexs.size() % 2)
+			indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
+	}
 
 	return indexVector;
 
@@ -107,16 +101,12 @@ inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 
 inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t end, std::vector<std::wstring> container) {
 	std::wstring newString = RandomUnicode(len, start, end);
-	//int counter == 0;
 	if (container.empty() == false) {
 		for (int i = 0; i < container.size(); i++)
 			if (container[i].compare(newString) == 0) {
 				newString = RandomUnicode(len, start, end);
+				//??
 				i = 0;
-				//counter++;
-				//if (counter > (end - start) * 3) {
-				//	
-				//}
 				break;
 			}
 	}
