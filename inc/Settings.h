@@ -8,7 +8,7 @@ namespace settings {
 	extern QString outFileName;
 	extern std::string outPath;
 	extern int countOfSettings;
-	extern std::vector<int> junkerOptions;
+	extern std::vector<bool> junkerOptions;
 }
 
 #endif // !SETTINGS_H

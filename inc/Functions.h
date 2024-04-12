@@ -3,7 +3,8 @@
 #include <vector>
 typedef std::pair<size_t, size_t> indexPair;
 
-const int specialVariables = 2;
+//check later why it is hardcoded
+const int specialVariables = 2;	
 
 struct Variable {
 	int isPointer;
@@ -17,29 +18,17 @@ struct Variable {
 
 };
 
-inline int CountOfRangeChars(int startIndex, std::vector<std::wstring>& wstringTab)
+inline int CountOfRangeChars(const std::wstring& wstringLine)
 {
+	if(wstringLine.empty())
+		return 0;
+	
 	int countOfRange = 0;
-	int indexHelp = 0;
-
-	while (true) {
-		if (!wstringTab[startIndex].empty() && wstringTab[startIndex].find(L"{", indexHelp) != std::string::npos) {
-			indexHelp = wstringTab[startIndex].find(L"{", indexHelp) + 1;
+	for(const auto& c : wstringLine)
+		if (c == L'{')
 			countOfRange++;
-		}
-		else
-			break;
-	}
-
-	indexHelp = 0;
-	while (true) {
-		if (!wstringTab[startIndex].empty() && wstringTab[startIndex].find(L"}", indexHelp) != std::string::npos) {
-			indexHelp = wstringTab[startIndex].find(L"}", indexHelp) + 1;
+		else if (c == L'}')
 			countOfRange--;
-		}
-		else
-			break;
-	}
 
 	return countOfRange;
 }
@@ -56,52 +45,43 @@ inline void Split(const std::wstring& str, T& cont, wchar_t wchar)
 
 }
 
-
 inline bool CheckInclude(std::wstring line)
 {
-	if (!line.empty() && line.find(L"#include") != std::wstring::npos)
-		return true;
-	return false;
+	return (!line.empty() && line.find(L"#include") != std::wstring::npos) ? true : false;
 }
 
+//check
 inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue)
 {
 	std::vector<size_t> allIndexs;
+	size_t startIndex = 0;
+	std::vector<indexPair> indexVector;
 
+	if(line.empty())
+		return indexVector;
 
-	size_t startIndex;
-
-	if (!line.empty() && line.find(_char) != std::wstring::npos) {
-		startIndex = line.find(_char);
-		if (startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') //
-			allIndexs.push_back(startIndex);
-
-		while (line.find(_char, startIndex + 1) != std::wstring::npos && startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') {
-			startIndex = line.find(_char, startIndex + 1);
+	while(line.find(_char, startIndex) != std::wstring::npos)
+	{
+		if(int(startIndex) - 1 >= 0 && line[startIndex - 1] != L'\\'){
+			startIndex = line.find(_char, startIndex);
 			allIndexs.push_back(startIndex);
 		}
+		startIndex++;
 	}
 
 
-	std::vector<indexPair> indexVector;
-
-	if (!allIndexs.empty())
-		if (isContinue) {
+	//need to understand the logic behind it
+	if(!allIndexs.empty()){
+		if(isContinue)
 			indexVector.push_back(indexPair(0, allIndexs[0]));
-			for (size_t i = 1; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
 
-
-			if (!(allIndexs.size() % 2))
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-		else {
-			for (size_t i = 0; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (allIndexs.size() % 2)
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
+		for(size_t i = (int)(isContinue); i < allIndexs.size() - 1; i += 2)
+			indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
+		if(isContinue && !(allIndexs.size() % 2))
+			indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
+		else if(allIndexs.size() % 2)
+			indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
+	}
 
 	return indexVector;
 
@@ -111,30 +91,31 @@ inline std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _ch
 inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 {
 	std::wstring ustr;
+	ustr.resize(len);
 	size_t intervalLength = end - start + 1;
 
-	for (auto i = 0; i < len; i++) {
-		ustr += (rand() % intervalLength) + start;
-	}
-
+	for (int i = 0; i < len; i++)
+		ustr[i] = (wchar_t)((rand() % intervalLength) + start);
 	return ustr;
 }
 
 
 inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t end, std::vector<std::wstring> container) {
+
+	bool isUnique = false;
 	std::wstring newString = RandomUnicode(len, start, end);
-	//int counter == 0;
-	if (container.empty() == false) {
+	if (container.empty())
+		return newString;
+	//I assume that len is long enough to cover all generations
+	//Maybe in future add mechanism to check if all possible values are used
+	do {
+		isUnique = true;
 		for (int i = 0; i < container.size(); i++)
-			if (container[i].compare(newString) == 0) {
-				newString = RandomUnicode(len, start, end);
-				i = 0;
-				//counter++;
-				//if (counter > (end - start) * 3) {
-				//	
-				//}
+			if (container[i].compare(newString) == 0){
+				isUniuqe = false;
+				newString =  RandomUnicode(len, start, end);
 				break;
 			}
-	}
+	} while(isUnique == false);
 	return newString;
 }

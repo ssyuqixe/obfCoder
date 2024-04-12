@@ -4,5 +4,5 @@ namespace settings {
 	QString outFileName = "notSelected";
 	std::string outPath = "notSelected";
 	int countOfSettings = 0;
-	std::vector<int> junkerOptions = { 1, 2, 3, 4, 5, 6, 7};
+	std::vector<bool> junkerOptions(7, true);
 }
