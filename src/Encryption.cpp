@@ -14,7 +14,7 @@ static std::mt19937_64 random;
 int Encryption::FindPlaceToAddEncryptionFunction(std::vector<std::wstring> cont)
 {
 	for (int i = 0; i < ptr_mainString->size(); i++)
-		if (!ptr_mainString[i].empty() && ptr_mainString[i].find(L'#') == std::wstring::npos)
+		if (!ptr_mainString[i].empty() && ptr_mainString->at(i).find(L'#') == std::wstring::npos)
 			for (const auto &element : cont)
 				if (ptr_mainString->at(i).find(element) != std::wstring::npos)
 					return i;

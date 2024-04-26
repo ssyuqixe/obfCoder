@@ -37,14 +37,16 @@ set(OBF_SOURCES
     src/Settings.cpp
     src/Encryption.cpp
     src/Junker.cpp
-)
-
-set(OBF_HEADERS
+    src/FileHandling.cpp
+    )
+    
+    set(OBF_HEADERS
     inc/GUI.h
     inc/Parser.h
     inc/Settings.h
     inc/Encryption.h
     inc/Junker.h
+    inc/FileHandling.h
     inc/GUI.ui
 )
 

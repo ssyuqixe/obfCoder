@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include "Parser.h"
 #include "Settings.h"
+#include "FileHandling.h"
 #include <QFileDialog>
 #include <QProcess>
 
@@ -55,7 +56,8 @@ void GUI::on_addButton_clicked()
 
 	clock_t sumTimeMain = 0;
 	// for (int i = 0; i < 100; i++) {
-	Parser *newParser = new Parser(settings::inFileName.toLocal8Bit().constData());
+	FileHandling file;
+	Parser *newParser = new Parser(file, settings::inFileName.toLocal8Bit().constData());
 	ui.textBrowser->clear();
 
 	if (newParser->Error() == true)
@@ -156,7 +158,7 @@ void GUI::on_addButton_clicked()
 
 	ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
 	//	sumTimeMain += sumtime;
-	newParser->SaveFile(settings::outFileName.toLocal8Bit().constData());
+	file.SaveFile(settings::outFileName.toLocal8Bit().constData());
 	// sumTimeMain += sumtime;
 	delete newParser;
 	//}

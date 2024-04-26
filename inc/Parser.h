@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 #include "Functions.h"
+#include "FileHandling.h"
 
 #include <iostream>
 #include <string>
@@ -15,9 +16,7 @@ typedef std::multimap<std::wstring, std::wstring> MapCode;
 class Parser
 {
 private:
-	std::wifstream iFile;
-	std::wofstream oFile;
-	std::vector<std::wstring> mainString;
+	std::vector<std::wstring>* mainString;
 	std::vector<std::wstring> splitedLine;
 	std::vector<std::wstring> special_operators{ L"+=", L"-=", L"*=", L"/=", L"<=",L">=",L"++", L"--", L"!=", L"//", L"<<", L">>", L"**", L"->", L"||" };
 	std::vector<std::wstring> operators{ L"=",L"+", L"-", L"/", L"*", L"%", L"&", L"<", L">", L"^", L"!", L"?", L",", L"." }; 
@@ -50,10 +49,8 @@ private:
 
 
 public:
-	Parser(std::string name);
-
-	std::vector<std::wstring> LoadFile(std::wifstream& iFile);
-	void SaveFile(std::string name);
+	Parser(std::vector<std::wstring>* ptrContentFile);
+	Parser(FileHandling& file, std::string name);
 
 	bool Error() { return isError; }
 

@@ -112,7 +112,7 @@ inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t 
 		isUnique = true;
 		for (int i = 0; i < container.size(); i++)
 			if (container[i].compare(newString) == 0){
-				isUniuqe = false;
+				isUnique = false;
 				newString =  RandomUnicode(len, start, end);
 				break;
 			}
