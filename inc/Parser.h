@@ -25,9 +25,6 @@ private:
 	std::wstring endBlock = L"#define obf_block_end";
 
 	std::vector<Variable> variables;
-
-	bool isError;
-
 	bool IsContinue(std::vector<indexPair> indexPosition, bool isContinue);
 
 
@@ -51,9 +48,6 @@ private:
 public:
 	Parser(std::vector<std::wstring>* ptrContentFile);
 	Parser(FileHandling& file, std::string name);
-
-	bool Error() { return isError; }
-
 	void SpaceOperators();
 	void DeleteComments();
 

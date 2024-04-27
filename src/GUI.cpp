@@ -57,12 +57,12 @@ void GUI::on_addButton_clicked()
 	clock_t sumTimeMain = 0;
 	// for (int i = 0; i < 100; i++) {
 	FileHandling file;
-	Parser *newParser = new Parser(file, settings::inFileName.toLocal8Bit().constData());
+	Parser *newParser = new Parser(file.LoadFile(settings::inFileName.toLocal8Bit().constData()));
 	ui.textBrowser->clear();
 
-	if (newParser->Error() == true)
+	if (file.IsOpen() == false)
 	{
-		ui.textBrowser->append("Cannot open the file!");
+		ui.textBrowser->append("File was empty or not loaded!");
 		return;
 	}
 
