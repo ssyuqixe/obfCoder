@@ -15,7 +15,7 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 	while (_amountOfVariables < amountOfVariables && p_Variables->size() > specialVariables)
 	{
 		int size = (int)(p_ContentFile->size());
-		int index = rand() % size;
+		int index = randomEngine.gen() % size;
 		bool isVariable = false;
 		int diffrence = 1;
 		Variable *variableData = nullptr;
@@ -81,7 +81,7 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 			option = -1;
 			
 			while(option == -1){
-				option = rand() % settings::junkerOptions.size();
+				option = randomEngine.gen() % settings::junkerOptions.size();
 				if(settings::junkerOptions[option] == false)
 					option = -1;
 			}
@@ -202,7 +202,7 @@ void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &
 void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::vector<indexPair> &contBlockedSpace)
 {
 	// std::wstring randomName = randomUnicode(7, 0x0041, 0x005A);
-	wchar_t random = (rand() % 9) + 49;
+	wchar_t random = (randomEngine.gen() % 9) + 49;
 	std::wstring junk = L"\t " + variable->name + L" " + oper + L" " + random + L";\n\0";
 
 	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
@@ -230,7 +230,7 @@ void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> 
 {
 	std::wstring junk1 = L"\t " + variable->name + L" ++ ;\n\0";
 	std::wstring junk2 = L"\t " + variable->name + L" -- ;\n\0";
-	int countOfAdd = (rand() % 20) + 1;
+	int countOfAdd = (randomEngine.gen() % 20) + 1;
 
 	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
@@ -248,7 +248,7 @@ void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> 
 void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
 {
 
-	wchar_t random = (rand() % 10) + 48;
+	wchar_t random = (randomEngine.gen() % 10) + 48;
 	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{
@@ -269,7 +269,7 @@ void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexP
 void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
 {
 
-	wchar_t random = (rand() % 10) + 48;
+	wchar_t random = (randomEngine.gen() % 10) + 48;
 	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{
@@ -290,7 +290,7 @@ void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<in
 
 void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSpace)
 {
-	wchar_t random = (rand() % 10) + 48;
+	wchar_t random = (randomEngine.gen() % 10) + 48;
 	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{

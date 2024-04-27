@@ -9,8 +9,6 @@
 #include <openssl/crypto.h>
 #include <codecvt>
 
-static std::mt19937_64 random;
-
 int Encryption::FindPlaceToAddEncryptionFunction(std::vector<std::wstring> cont)
 {
 	for (int i = 0; i < ptr_mainString->size(); i++)
@@ -24,8 +22,6 @@ int Encryption::FindPlaceToAddEncryptionFunction(std::vector<std::wstring> cont)
 void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 {
 	std::vector<std::wstring> cont{L"int", L"double", L"float", L"string", L"uint8_t", L"uint16_t", L"uint32_t", L"uint64_t", L"int8_t", L"int16_t", L"int32_t", L"int64_t", L"char", L"char16_t", L"char32_t", L"bool", L"short", L"wchar_t", L"size_t", L"void", L"class", L"struct", L"template", L"namespace"}; // L"void"
-
-	random.seed(time(NULL));
 
 	std::string skey = RandomKey();
 	std::wstring decryptStringName = RandomUnicode(5, 0x0061, 0x007A) + RandomUnicode(3, 0x0030, 0x0039);
@@ -166,7 +162,7 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 
 void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int index, std::wstring decryptStringName, int replaceIndex)
 {
-	int counter = random() % INT_MAX;
+	int counter = randomEngine.gen() % INT_MAX;
 
 	std::string valueToEnc = std::to_string(std::stoi(valueCode) + counter);
 	// counter++;
@@ -222,7 +218,7 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 				{
 					if (position < indexPositions[i].first)
 					{
-						int difference = text.length() - (valueCode.length() + 2);
+						int difference = int(text.length() - (valueCode.length() + 2));
 						indexPositions[i].first += difference;
 						indexPositions[i].second += difference;
 					}
@@ -277,7 +273,7 @@ std::string Encryption::RandomKey(int length, bool addDigits)
 
 	for (int i = 0; i < length; i++)
 	{
-		key += randomArray[rand() % 33];
+		key += randomArray[randomEngine.gen() % 33];
 	}
 
 	return key;

@@ -1,10 +1,20 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <random>
+
 typedef std::pair<size_t, size_t> indexPair;
 
 //check later why it is hardcoded
 const int specialVariables = 2;	
+
+struct RandomEngine{
+	std::random_device rd;
+	std::mt19937 gen;
+	RandomEngine() : gen(rd()) {}
+};
+static RandomEngine randomEngine;
+
 
 struct Variable {
 	int isPointer;
@@ -95,7 +105,7 @@ inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 	size_t intervalLength = end - start + 1;
 
 	for (int i = 0; i < len; i++)
-		ustr[i] = (wchar_t)((rand() % intervalLength) + start);
+		ustr[i] = (wchar_t)((randomEngine.gen() % intervalLength) + start);
 	return ustr;
 }
 
