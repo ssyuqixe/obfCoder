@@ -2,17 +2,20 @@
 #define JUNKER_H
 
 #include "Functions.h"
+#include "Component.h"
 #include <iostream>
 #include <string>
 #include <vector>
 
-class Junker
+class Junker : public Component
 {
 
 private:
-	std::vector<std::wstring>* ptr_mainString;
-	std::vector<Variable>* ptr_variables;
+	std::vector<std::wstring>* p_ContentFile;
+	std::vector<Variable>* p_Variables;
 	std::vector<std::wstring> allJunkNames;
+	int amountOfVariables;
+	int amountOfJunk;
 
 	bool FindIndexToAddJunk(int& index, int diffrence, Variable*& variable);
 	std::vector<indexPair> FindBlockedIndexForJunk();
@@ -24,12 +27,15 @@ private:
 	void AddForUnconnected(int& index, std::vector<indexPair>& contBlockedSpace);
 	void InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace);
 public:
-	Junker(std::vector<std::wstring>* mainString, std::vector<Variable>* variables) : ptr_mainString(mainString), ptr_variables(variables) {
+	Junker(std::vector<std::wstring>* mainString, std::vector<Variable>* variables) : p_ContentFile(mainString), p_Variables(variables) {
 		allJunkNames.push_back(L"do");
 		allJunkNames.push_back(L"or");
 		allJunkNames.push_back(L"if");
 	}
 	void FindJunkPlace(int amountOfVariables, int amountOfJunk);
+
+	bool Update(std::vector<int> &settings) override;
+	bool DoTechnique() override;
 
 };
 

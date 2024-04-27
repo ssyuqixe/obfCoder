@@ -12,9 +12,9 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 	// change later the random engine
 	srand(time(NULL));
 	int _amountOfVariables = 0;
-	while (_amountOfVariables < amountOfVariables && ptr_variables->size() > specialVariables)
+	while (_amountOfVariables < amountOfVariables && p_Variables->size() > specialVariables)
 	{
-		int size = (int)(ptr_mainString->size());
+		int size = (int)(p_ContentFile->size());
 		int index = rand() % size;
 		bool isVariable = false;
 		int diffrence = 1;
@@ -32,7 +32,7 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 				break;
 			}
 		if (isIndexBlocked == 0)
-			for (auto const &variable : *ptr_variables)
+			for (auto const &variable : *p_Variables)
 				isVariable = FindIndexToAddJunk(index, 0, variableData);
 
 		while (isVariable == false)
@@ -120,16 +120,16 @@ bool Junker::FindIndexToAddJunk(int &index, int diffrence, Variable *&variableDa
 {
 	std::vector<std::wstring> contToCheckIfPointer;
 
-	if (index + diffrence >= ptr_mainString->size() || index + diffrence < 0)
+	if (index + diffrence >= p_ContentFile->size() || index + diffrence < 0)
 		return false;
 
-	for (auto &variable : *ptr_variables)
+	for (auto &variable : *p_Variables)
 	{
-		if (!ptr_mainString->at(index + diffrence).empty() && ptr_mainString->at(index + diffrence).find(L" " + variable.name + L" ") != std::wstring::npos)
+		if (!p_ContentFile->at(index + diffrence).empty() && p_ContentFile->at(index + diffrence).find(L" " + variable.name + L" ") != std::wstring::npos)
 		{
 
 			int helpindex = -1;
-			Split(ptr_mainString->at(index + diffrence), contToCheckIfPointer, L' ');
+			Split(p_ContentFile->at(index + diffrence), contToCheckIfPointer, L' ');
 			for (int i = 0; i < contToCheckIfPointer.size(); i++)
 			{
 				if (contToCheckIfPointer[i].compare(variable.name) == 0)
@@ -146,7 +146,7 @@ bool Junker::FindIndexToAddJunk(int &index, int diffrence, Variable *&variableDa
 			if (variable.isArray > 0 || variable.type.compare(L"bool") == 0)
 				continue;
 
-			if (ptr_mainString->at(index + diffrence).find(L" const ") != std::wstring::npos && ptr_mainString->at(index + diffrence).find(L"const ") != std::wstring::npos)
+			if (p_ContentFile->at(index + diffrence).find(L" const ") != std::wstring::npos && p_ContentFile->at(index + diffrence).find(L"const ") != std::wstring::npos)
 				continue;
 
 			// if ((helpindex + 2) < contToCheckIfPointer.size() && contToCheckIfPointer[helpindex + 2].compare(L"new") == 0)
@@ -167,15 +167,15 @@ std::vector<indexPair> Junker::FindBlockedIndexForJunk()
 	int indexStart = -1;
 	bool isInRange = false;
 	int sumCountOfRange = 0;
-	for (int i = 0; i < ptr_mainString->size(); i++)
+	for (int i = 0; i < p_ContentFile->size(); i++)
 	{
-		if (!ptr_mainString->at(i).empty() && countOfRange == 0 && ((ptr_mainString->at(i).find(L"class") != std::wstring::npos) || (ptr_mainString->at(i).find(L"struct") != std::wstring::npos)))
+		if (!p_ContentFile->at(i).empty() && countOfRange == 0 && ((p_ContentFile->at(i).find(L"class") != std::wstring::npos) || (p_ContentFile->at(i).find(L"struct") != std::wstring::npos)))
 		{
 			indexStart = i;
 			isInRange = true;
 		}
 
-		sumCountOfRange = CountOfRangeChars((*ptr_mainString)[i]);
+		sumCountOfRange = CountOfRangeChars((*p_ContentFile)[i]);
 		countOfRange += sumCountOfRange;
 
 		if (isInRange && sumCountOfRange < 0 && countOfRange == 0)
@@ -205,7 +205,7 @@ void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::ve
 	wchar_t random = (rand() % 9) + 49;
 	std::wstring junk = L"\t " + variable->name + L" " + oper + L" " + random + L";\n\0";
 
-	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
+	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
 	if (oper.compare(L"*=") == 0)
@@ -219,8 +219,8 @@ void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::ve
 
 	std::wstring junk2 = L"\t " + variable->name + L" " + oper + L" " + random + L";\n\0";
 
-	ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk);
-	ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
+	p_ContentFile->insert(p_ContentFile->begin() + index + 1, junk);
+	p_ContentFile->insert(p_ContentFile->begin() + index + 2, junk2);
 
 	UpdateBlockedIndexs(index, 2, contBlockedSpace);
 	index += 1; //+
@@ -232,13 +232,13 @@ void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> 
 	std::wstring junk2 = L"\t " + variable->name + L" -- ;\n\0";
 	int countOfAdd = (rand() % 20) + 1;
 
-	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
+	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
 	for (int i = 0; i < countOfAdd; i++)
 	{
-		ptr_mainString->insert(ptr_mainString->begin() + index + 1, junk1);
-		ptr_mainString->insert(ptr_mainString->begin() + index + 2, junk2);
+		p_ContentFile->insert(p_ContentFile->begin() + index + 1, junk1);
+		p_ContentFile->insert(p_ContentFile->begin() + index + 2, junk2);
 		index += 1;
 	}
 	UpdateBlockedIndexs(index, countOfAdd, contBlockedSpace);
@@ -314,11 +314,26 @@ void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSp
 }
 
 void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace){
-	if (index + 1 < ptr_mainString->size() && ptr_mainString->at(index + 1).find(L"{") != std::wstring::npos)
+	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
 	for (auto i = 0; i < junkCode.size(); i++)
-		ptr_mainString->insert(ptr_mainString->begin() + index + i + 1, junkCode[i]);
+		p_ContentFile->insert(p_ContentFile->begin() + index + i + 1, junkCode[i]);
 	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlockedSpace);
 	index += (int)junkCode.size();
+}
+
+bool Junker::Update(std::vector<int> &settings)
+{
+	if(settings.size() != 2)
+		return false;
+	amountOfVariables = settings[0];
+	amountOfJunk = settings[1];
+	return true;
+}
+
+bool Junker::DoTechnique()
+{
+	FindJunkPlace(amountOfVariables, amountOfJunk);
+	return true;
 }

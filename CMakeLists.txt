@@ -47,11 +47,12 @@ set(OBF_SOURCES
     inc/Encryption.h
     inc/Junker.h
     inc/FileHandling.h
+    inc/Component.h
     inc/GUI.ui
-)
+    )
 
 add_executable(${PROJECT_NAME}
-    WIN32 # remove console 
+    #WIN32 # remove console 
     ${OBF_SOURCES}
     ${OBF_HEADERS}
 )

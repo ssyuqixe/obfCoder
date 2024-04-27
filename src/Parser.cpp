@@ -965,9 +965,9 @@ void Parser::ChangeLoops()
 
 void Parser::AddJunks(int amountOfVariables, int amountOfJunk)
 {
-	Junker *junker = new Junker(&*mainString, &variables);
-	junker->FindJunkPlace(amountOfVariables, amountOfJunk);
-	delete junker;
+	Junker junker(&*mainString, &variables);
+	junker.Update(std::vector<int>({amountOfVariables, amountOfJunk}));
+	junker.DoTechnique();
 }
 
 void Parser::AddEncryption(bool toFile, bool onlyFors)
