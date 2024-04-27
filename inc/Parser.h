@@ -35,21 +35,10 @@ private:
 
 	void AddExpectionsWords();
 
-	int FindForLoop(int startIndex);
-	int LengthOfLoop(int startIndex);
-	int LengthOfSecondLoop(int startIndex, std::vector<std::wstring> wstringTab);
-	void GetVariablesFromFor(std::wstring lineFor, std::wstring* tab, short index, wchar_t _char);
-	int GetNameForChangeLoop(std::wstring lineLoop, std::wstring lineLoopSecond, std::wstring& nameOfVar);
-	void RemoveBracketOfSecondLoop(int startIndex, int loopLength, std::vector<std::wstring>& wstringTab);
-
-	int ChangeLoop(int indexLoop);
-
-
 public:
 	Parser(std::vector<std::wstring>* ptrContentFile);
 	Parser(FileHandling& file, std::string name);
 	void SpaceOperators();
-	void DeleteComments();
 
 	void SpaceOperatorsFix();
 

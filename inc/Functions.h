@@ -1,4 +1,8 @@
-#pragma once
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <random>
@@ -42,6 +46,7 @@ inline int CountOfRangeChars(const std::wstring& wstringLine)
 
 	return countOfRange;
 }
+
 
 template<class T>
 inline void Split(const std::wstring& str, T& cont, wchar_t wchar)
@@ -129,3 +134,6 @@ inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t 
 	} while(isUnique == false);
 	return newString;
 }
+
+
+#endif // FUNCTIONS_H

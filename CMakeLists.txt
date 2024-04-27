@@ -38,6 +38,11 @@ set(OBF_SOURCES
     src/Encryption.cpp
     src/Junker.cpp
     src/FileHandling.cpp
+	src/Comments.cpp
+	src/Looper.cpp
+	src/Enters.cpp
+	src/Renamer.cpp
+	src/Spaces.cpp
     )
     
     set(OBF_HEADERS
@@ -48,6 +53,12 @@ set(OBF_SOURCES
     inc/Junker.h
     inc/FileHandling.h
     inc/Component.h
+    inc/Manager.h
+	inc/Comments.h
+	inc/Looper.h
+	inc/Enters.h
+	inc/Renamer.h
+	inc/Spaces.h
     inc/GUI.ui
     )
 

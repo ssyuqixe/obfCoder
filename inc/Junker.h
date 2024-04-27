@@ -13,6 +13,7 @@ class Junker : public Component
 private:
 	std::vector<std::wstring>* p_ContentFile;
 	std::vector<Variable>* p_Variables;
+	//todo: rename variables
 	std::vector<std::wstring> allJunkNames;
 	int amountOfVariables;
 	int amountOfJunk;

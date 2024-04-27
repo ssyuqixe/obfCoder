@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include "Parser.h"
 #include "Settings.h"
+#include "Comments.h"
 #include "FileHandling.h"
 #include <QFileDialog>
 #include <QProcess>
@@ -78,7 +79,8 @@ void GUI::on_addButton_clicked()
 	if (ui.cb_deleteComments->isChecked())
 	{
 		time = clock();
-		newParser->DeleteComments();
+		Comments comments(file.GetContent());
+		comments.DoTechnique();
 		time = clock() - time;
 		ui.textBrowser->append("Deleted comments - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 		sumtime += time;

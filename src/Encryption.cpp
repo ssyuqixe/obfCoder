@@ -11,10 +11,10 @@
 
 int Encryption::FindPlaceToAddEncryptionFunction(std::vector<std::wstring> cont)
 {
-	for (int i = 0; i < ptr_mainString->size(); i++)
-		if (!ptr_mainString[i].empty() && ptr_mainString->at(i).find(L'#') == std::wstring::npos)
+	for (int i = 0; i < p_ContentFile->size(); i++)
+		if (!p_ContentFile[i].empty() && p_ContentFile->at(i).find(L'#') == std::wstring::npos)
 			for (const auto &element : cont)
-				if (ptr_mainString->at(i).find(element) != std::wstring::npos)
+				if (p_ContentFile->at(i).find(element) != std::wstring::npos)
 					return i;
 	return 0;
 }
@@ -37,7 +37,7 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 	std::wstring wKey = converter.from_bytes(skey);
 	if (toFile == false)
 	{
-		keyString = L"unsigned char " + keyStringName + L"[] = \"" + wKey + L"\"; \n\0 ";
+		keyString = L"unsigned char " + m_keyVariable + L"[] = \"" + wKey + L"\"; \n\0 ";
 	}
 	else
 	{
@@ -50,7 +50,7 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 		ofs << skey << std::flush;
 		ofs.close();
 
-		keyString = L"std::ifstream file(\"key.txt\"); \n std::string str; \n std::getline(file, str); \n unsigned char* " + keyStringName + L" = (unsigned char*)str.c_str(); \n ";
+		keyString = L"std::ifstream file(\"key.txt\"); \n std::string str; \n std::getline(file, str); \n unsigned char* " + m_keyVariable + L" = (unsigned char*)str.c_str(); \n ";
 	}
 
 	int indexToPlaceMainDeFunc = FindPlaceToAddEncryptionFunction(cont);
@@ -84,30 +84,31 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 		}
 
 	std::wstring functionHeader = L"int " + decryptStringName + L"(unsigned char* " + namesInTemplate[0] + L", int " + namesInTemplate[1] + L") {\n\0";
-	std::wstring functionBody1 = L"AES_KEY " + namesInTemplate[2] + L";\n  unsigned char " + namesInTemplate[3] + L"[80];\n AES_set_decrypt_key(" + keyStringName + L", 128, &" + namesInTemplate[2] + L");\n\0";
+	std::wstring functionBody1 = L"AES_KEY " + namesInTemplate[2] + L";\n  unsigned char " + namesInTemplate[3] + L"[80];\n AES_set_decrypt_key(" + m_keyVariable + L", 128, &" + namesInTemplate[2] + L");\n\0";
 	std::wstring functionBody2 = L"	AES_decrypt(" + namesInTemplate[0] + L", " + namesInTemplate[3] + L", &" + namesInTemplate[2] + L");\n\0";
 	std::wstring functionBody3 = L"std::string " + namesInTemplate[4] + L"; \n for (const auto& " + namesInTemplate[5] + L" : " + namesInTemplate[3] + L") \n " + namesInTemplate[4] + L" += " + namesInTemplate[5] + L"; \n return stoi(" + namesInTemplate[4] + L") - " + namesInTemplate[1] + L"; }\n\0";
 
 	// this->mainString.insert(mainString.begin() + indexToPlaceMainDeFunc + 0, randomCounter);
-	ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 0, functionHeader);
-	ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 1, functionBody1);
-	ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 2, functionBody2);
-	ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 3, functionBody3);
+	// todo: conteiner + loop for inserting
+	p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 0, functionHeader);
+	p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 1, functionBody1);
+	p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 2, functionBody2);
+	p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 3, functionBody3);
 	if (toFile == false)
-		ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 0, keyString);
+		p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 0, keyString);
 	else
-		ptr_mainString->insert(ptr_mainString->begin() + indexToPlaceMainDeFunc + 1, keyString);
+		p_ContentFile->insert(p_ContentFile->begin() + indexToPlaceMainDeFunc + 1, keyString);
 
 	std::string valueToEnc;
 
 	if (onlyFors == true)
-		for (int i = 0; i < ptr_mainString->size(); i++)
+		for (int i = 0; i < p_ContentFile->size(); i++)
 		{
-			if (!ptr_mainString->empty() && ptr_mainString->at(i).find(L"for") != std::wstring::npos)
+			if (!p_ContentFile->empty() && p_ContentFile->at(i).find(L"for") != std::wstring::npos)
 			{
 				std::vector<std::wstring> container;
 				std::vector<std::wstring> container2;
-				Split(ptr_mainString->at(i), container, L';');
+				Split(p_ContentFile->at(i), container, L';');
 				Split(container.front(), container2, L'=');
 
 				while (container2.back().find(L" ") != std::wstring::npos)
@@ -130,12 +131,12 @@ void Encryption::AddFunctionEncryption(bool toFile, bool onlyFors)
 			}
 		}
 	else
-		for (int i = 0; i < ptr_mainString->size(); i++)
+		for (int i = 0; i < p_ContentFile->size(); i++)
 		{
-			if (!ptr_mainString->empty())
+			if (!p_ContentFile->empty())
 			{
 				std::vector<std::wstring> container;
-				Split(ptr_mainString->at(i), container, L' ');
+				Split(p_ContentFile->at(i), container, L' ');
 
 				std::locale loc;
 
@@ -172,9 +173,9 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 	AES_set_encrypt_key(key, 128, &enc_key);
 	AES_encrypt(text, enc_out, &enc_key);
 
-	std::vector<indexPair> indexPositions = FindCharIndex(ptr_mainString->at(index), L"\"", false);
+	std::vector<indexPair> indexPositions = FindCharIndex(p_ContentFile->at(index), L"\"", false);
 
-	std::vector<indexPair> indexPositionByChar = FindCharIndex(ptr_mainString->at(index), L"'", false);	   //
+	std::vector<indexPair> indexPositionByChar = FindCharIndex(p_ContentFile->at(index), L"'", false);	   //
 	std::copy(indexPositionByChar.begin(), indexPositionByChar.end(), std::back_inserter(indexPositions)); //
 
 	std::wstring Value = L"";
@@ -189,12 +190,12 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 	if (indexPositions.empty() == true)
 	{
 		std::wstring text = L" " + decryptStringName + L"((unsigned char*)\"" + Value + L"\" , " + std::to_wstring(counter) + L" ) ";
-		ptr_mainString->at(index).replace(ptr_mainString->at(index).find(L" " + valueCode + L" "), valueCode.length() + 2, text);
+		p_ContentFile->at(index).replace(p_ContentFile->at(index).find(L" " + valueCode + L" "), valueCode.length() + 2, text);
 	}
 	else
 	{
 		int diff = 0;
-		int position = (int)(ptr_mainString->at(index).find(L" " + valueCode + L" ", diff));
+		int position = (int)(p_ContentFile->at(index).find(L" " + valueCode + L" ", diff));
 		while (position != std::wstring::npos)
 		{
 			bool isInside = false;
@@ -212,7 +213,7 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 			if (isInside == false)
 			{
 				std::wstring text = L" " + decryptStringName + L"( (unsigned char *)\"" + Value + L"\" , " + std::to_wstring(counter) + L" ) ";
-				ptr_mainString->at(index).replace(position, valueCode.length() + 2, text);
+				p_ContentFile->at(index).replace(position, valueCode.length() + 2, text);
 
 				for (int i = 0; i < indexPositions.size(); i++)
 				{
@@ -226,7 +227,7 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 
 				break;
 			}
-			position = (int)(ptr_mainString->at(index).find(L" " + valueCode + L" ", diff));
+			position = (int)(p_ContentFile->at(index).find(L" " + valueCode + L" ", diff));
 		}
 	}
 }
@@ -234,9 +235,9 @@ void Encryption::EncryptValue(std::wstring valueCode, unsigned char *key, int in
 void Encryption::AddLibraries(std::vector<std::wstring> libs)
 {
 	int indexOfLastInclude = 0;
-	for (int i = 0; i < ptr_mainString->size(); i++)
+	for (int i = 0; i < p_ContentFile->size(); i++)
 	{
-		if (CheckInclude(ptr_mainString->at(i)) == true)
+		if (CheckInclude(p_ContentFile->at(i)) == true)
 		{
 			indexOfLastInclude = i;
 		}
@@ -244,11 +245,11 @@ void Encryption::AddLibraries(std::vector<std::wstring> libs)
 
 	for (int i = 0; i < indexOfLastInclude; i++)
 	{
-		if (ptr_mainString->at(i).empty() == false)
+		if (p_ContentFile->at(i).empty() == false)
 		{
 			for (auto &lib : libs)
 			{
-				if (ptr_mainString->at(i).find(lib) != std::wstring::npos)
+				if (p_ContentFile->at(i).find(lib) != std::wstring::npos)
 				{
 					lib = L"exist";
 				}
@@ -260,7 +261,7 @@ void Encryption::AddLibraries(std::vector<std::wstring> libs)
 	{
 		if (lib.compare(L"exist") != 0)
 		{
-			ptr_mainString->insert(ptr_mainString->begin() + indexOfLastInclude + 1, L"#include " + lib + L"\n");
+			p_ContentFile->insert(p_ContentFile->begin() + indexOfLastInclude + 1, L"#include " + lib + L"\n");
 		}
 	}
 }
@@ -269,12 +270,11 @@ std::string Encryption::RandomKey(int length, bool addDigits)
 {
 	unsigned char randomArray[] = "0123456789abcdefghijklmnoprstuvwz";
 
-	std::string key = "";
-
+	std::string key(length, ' ');
+	int randomLength = 33;
+	int i_start = (addDigits == true) ? 0 : 10;
 	for (int i = 0; i < length; i++)
-	{
-		key += randomArray[randomEngine.gen() % 33];
-	}
+		key[i] = randomArray[i_start + randomEngine.gen() % randomLength];
 
 	return key;
 }
@@ -284,4 +284,19 @@ void Encryption::MakeEncryption(bool toFile, bool onlyFors)
 	AddFunctionEncryption(toFile, onlyFors);
 	std::vector<std::wstring> vector = {L"<openssl/aes.h>", L"<fstream>", L"<string>"};
 	AddLibraries(vector);
+}
+
+bool Encryption::Update(std::vector<int> &settings)
+{
+	if(settings.size() != 2)
+		return false;
+	m_toFile = bool(settings[0]);
+	m_onlyFors = bool(settings[1]);
+	return true;
+}
+
+bool Encryption::DoTechnique()
+{
+	MakeEncryption(m_toFile, m_onlyFors);
+	return true;
 }
