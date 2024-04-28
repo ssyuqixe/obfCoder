@@ -381,7 +381,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QCheckBox" name="cb_DeleteSpace">
+    <widget class="QCheckBox" name="cb_DeleteSpaces">
      <property name="enabled">
       <bool>true</bool>
      </property>
@@ -512,7 +512,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>260</y>
+      <y>220</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -534,6 +534,18 @@
      <string>Execute</string>
     </property>
    </widget>
+   <zorder>b_openFile</zorder>
+   <zorder>textBrowser</zorder>
+   <zorder>groupBox</zorder>
+   <zorder>lineEdit</zorder>
+   <zorder>lineEdit_2</zorder>
+   <zorder>b_LoadFile</zorder>
+   <zorder>label</zorder>
+   <zorder>fileNameLabelIn</zorder>
+   <zorder>fileNameLabelOut</zorder>
+   <zorder>b_SaveFile</zorder>
+   <zorder>label_4</zorder>
+   <zorder>pushButton</zorder>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">

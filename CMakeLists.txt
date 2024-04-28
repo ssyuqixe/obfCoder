@@ -37,16 +37,31 @@ set(OBF_SOURCES
     src/Settings.cpp
     src/Encryption.cpp
     src/Junker.cpp
-)
-
-set(OBF_HEADERS
+    src/FileHandling.cpp
+    src/Manager.cpp
+	src/Comments.cpp
+	src/Looper.cpp
+	src/Enters.cpp
+	src/Renamer.cpp
+	src/Spaces.cpp
+    )
+    
+    set(OBF_HEADERS
     inc/GUI.h
     inc/Parser.h
     inc/Settings.h
     inc/Encryption.h
     inc/Junker.h
+    inc/FileHandling.h
+    inc/Component.h
+    inc/Manager.h
+	inc/Comments.h
+	inc/Looper.h
+	inc/Enters.h
+	inc/Renamer.h
+	inc/Spaces.h
     inc/GUI.ui
-)
+    )
 
 add_executable(${PROJECT_NAME}
     WIN32 # remove console 

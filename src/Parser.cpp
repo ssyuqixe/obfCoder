@@ -5,62 +5,29 @@
 #include <random>
 #include "Encryption.h"
 #include "Junker.h"
+#include "FileHandling.h"
 
 static std::mt19937_64 random;
 
-bool Parser::IsContinue(std::vector<indexPair> indexPosition, bool isContinue)
+bool Parser::IsContinue(const std::vector<indexPair>& indexPosition, bool isContinue)
 {
 	if (!indexPosition.empty())
 		isContinue = (indexPosition.back().second >= INT32_MAX) ? true : false;
 	return isContinue;
 }
 
-Parser::Parser(std::string name)
+Parser::Parser(std::vector<std::wstring>* ptrContentFile)
 {
-	iFile.open(name);
-	this->mainString = LoadFile(this->iFile);
+	this->mainString = ptrContentFile;
 
 	AddExpectionsWords();
 }
 
-std::vector<std::wstring> Parser::LoadFile(std::wifstream &iFile)
+Parser::Parser(FileHandling& file, std::string name)
 {
+	this->mainString = file.LoadFile(name);
 
-	std::vector<std::wstring> stringVector;
-	if (!iFile)
-	{
-		std::cout << "Cannot open the file!" << std::endl;
-		isError = true;
-		return stringVector;
-	}
-
-	std::wstring str;
-	while (std::getline(iFile, str))
-	{
-		str += L"\n";
-		stringVector.push_back(str);
-	}
-
-	// Deleting character set, which sometimes generate at start of file
-	if (!stringVector[0].empty() && stringVector[0].find(L"ï»¿") != std::wstring::npos)
-		stringVector[0].erase(stringVector[0].find(L"ï»¿"), 3);
-
-	iFile.close();
-	return stringVector;
-}
-
-void Parser::SaveFile(std::string name)
-{
-
-	std::locale loc(std::locale(), new std::codecvt_utf8_utf16<wchar_t>);
-	std::basic_ofstream<wchar_t> ofs(name);
-	ofs.imbue(loc);
-
-	this->oFile.open(name);
-	for (const auto &line : this->mainString)
-		ofs << line << std::flush;
-		
-	this->oFile.close();
+	AddExpectionsWords();
 }
 
 void Parser::SpaceOperators()
@@ -76,7 +43,7 @@ void Parser::SpaceOperators()
 	bool isContinue = false;
 	bool isNotInRange;
 
-	for (auto &line : this->mainString)
+	for (auto &line : *this->mainString)
 	{
 		if (CheckInclude(line))
 			continue;
@@ -168,6 +135,7 @@ void Parser::SpaceOperators()
 
 		DeleteDoubleSpaces(line);
 	}
+	FindVariables();
 }
 
 // Add space after search variable names e.g. for a constructor
@@ -176,7 +144,7 @@ void Parser::SpaceOperatorsFix()
 	std::vector<indexPair> indexPositions;
 	bool isContinue = false;
 
-	for (auto &line : this->mainString)
+	for (auto &line : *this->mainString)
 	{
 
 		if (CheckInclude(line))
@@ -202,47 +170,6 @@ void Parser::SpaceOperatorsFix()
 	}
 }
 
-void Parser::DeleteComments()
-{
-	bool commentLong = false;
-	for (auto &line : mainString)
-	{
-		if (!commentLong && !line.empty() && line.find(L"/*") != std::string::npos)
-		{
-
-			if (line.find(L"\"/*\"") == std::string::npos && line.find(L"\"*/\"") == std::string::npos && line.find(L"\\\"") == std::string::npos)
-			{
-				if (line.rfind(L"*/") != std::string::npos && line.rfind('*/') != line.find(L"/*") + 1)
-				{ // case for /*   */ in one line
-					line.erase(line.find(L"/*"), line.rfind(L"*/") + 1);
-				}
-				else if (line.find(L"*/") != std::string::npos && line.find('*/') == line.find(L"/*") + 1 && line.find(L"*/") == line.rfind(L"*/"))
-				{
-					line.erase(line.find(L"/*", line.length() - 1)); // case for /*/*/, checking if there is /*/ and last is */ or /*/
-					commentLong = true;
-				}
-				else
-				{
-					line.erase(line.find(L"/*"), line.length() - 1); // deleting all comments if there is not */ in the line
-					commentLong = true;
-				}
-			}
-		}
-
-		if (commentLong && !line.empty() && line.rfind(L"*/") != std::string::npos)
-		{ // checking if there is */ and stop deleting
-			line.erase(0, line.find(L"*/") + 2);
-			commentLong = false;
-		}
-
-		if (commentLong) // just delete comments if there isn't /* or */
-			line.erase();
-
-		if (!commentLong && !line.empty() && line.find(L"//") != std::string::npos && line.find(L"\"//\"") == std::string::npos)
-			line.erase(line.find(L"//"), line.length() - line.find(L"//") - 1);
-	}
-}
-
 void Parser::FindVariables()
 {
 
@@ -256,7 +183,7 @@ void Parser::FindVariables()
 	int pointerCounter = 0;
 	int arrayDimCounter = 0;
 
-	for (auto &line : this->mainString)
+	for (auto &line : *this->mainString)
 	{
 		iter++;
 		Split(line, this->splitedLine, L' ');
@@ -357,48 +284,6 @@ void Parser::FindVariables()
 	}
 }
 
-std::vector<indexPair> Parser::FindCharIndex(std::wstring &line, std::wstring _char, bool isContinue)
-{
-	std::vector<size_t> allIndexs;
-
-	size_t startIndex;
-
-	if (!line.empty() && line.find(_char) != std::wstring::npos)
-	{
-		startIndex = line.find(_char);
-		if (startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') //
-			allIndexs.push_back(startIndex);
-
-		while (line.find(_char, startIndex + 1) != std::wstring::npos && startIndex - 1 >= 0 && line[startIndex - 1] != L'\\')
-		{
-			startIndex = line.find(_char, startIndex + 1);
-			allIndexs.push_back(startIndex);
-		}
-	}
-
-	std::vector<indexPair> indexVector;
-
-	if (!allIndexs.empty())
-		if (isContinue)
-		{
-			indexVector.push_back(indexPair(0, allIndexs[0]));
-			for (size_t i = 1; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (!(allIndexs.size() % 2))
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-		else
-		{
-			for (size_t i = 0; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (allIndexs.size() % 2)
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-
-	return indexVector;
-}
 
 std::vector<indexPair> Parser::FindBlockIndex()
 {
@@ -407,7 +292,7 @@ std::vector<indexPair> Parser::FindBlockIndex()
 	size_t startIndex;
 
 	int i = 0;
-	for (auto &line : this->mainString)
+	for (auto &line : *this->mainString)
 	{
 		if (!line.empty() && line.find(startBlock) != std::wstring::npos)
 		{
@@ -433,6 +318,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 {
 	// std::wstring newName = randomUnicode(10, 0x0041, 0x005A); //A-Z
 	std::wstring newName = RandomUnicode(1, 0x4E00, 0x62FF); // chinese 0x62FF
+	// std::wstring newName = RandomUnicode(1, 0x1F600, 0x1F64F); // emoji 0x1F600, 0x1F64F
 	int i = 1;
 	bool change = true;
 	while (change)
@@ -444,6 +330,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 			if (element.newName == newName)
 			{
 				newName = RandomUnicode(++i, 0x4E00, 0x62FF);
+				// newName = RandomUnicode(++i, 0x1F600, 0x1F64F);
 				change = true;
 				break;
 			}
@@ -455,80 +342,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 
 void Parser::ChangeVariables()
 {
-	size_t index;
-	int diff;
-	bool isNotInRange;
-	bool isContinue = false;
-	size_t indexOfPair;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : this->mainString)
-	{
-		if (line.empty() == true)
-			continue;
-
-		index = 0;
-		diff = 0;
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		while (line.find(L" false ") != std::string::npos)
-		{
-			index = line.find(L" false ", 0);
-			line.replace(index, 7, L" 0 ");
-		}
-		while (line.find(L" true ") != std::string::npos)
-		{
-			index = line.find(L" true ", 0);
-			line.replace(index, 6, L" 1 ");
-		}
-
-		for (auto const &variable : this->variables)
-		{
-			if (line.find(L" " + variable.name + L" ") != std::string::npos)
-			{
-				index = line.find(L" " + variable.name + L" ");
-				indexOfPair = 0;
-				while (line.find(L" " + variable.name + L" ", index) != std::string::npos)
-				{
-					isNotInRange = true;
-					if (!indexPositions.empty())
-						for (size_t i = 0; i < indexPositions.size(); i++)
-						{
-							if (indexPositions[i].first < index && index < indexPositions[i].second)
-							{
-								isNotInRange = false;
-								indexOfPair = i;
-								break;
-							}
-						}
-
-					if (isNotInRange)
-					{
-						diff = (int)(variable.newName.length() - variable.name.length()); // counting the length of diffrence new name - old name
-						line.replace(index, variable.name.length() + 2, L" " + variable.newName + L" ");
-						index = line.find(L" " + variable.name + L" ", index + variable.name.length() + diff);
-
-						if (!indexPositions.empty())
-						{
-							// indexPositions[indexOfPair].second += diff;
-
-							for (size_t i = indexOfPair + 1; i < indexPositions.size(); i++)
-							{
-								indexPositions[i].first += diff;
-								indexPositions[i].second += diff;
-							}
-						}
-					}
-					else
-						index = line.find(L" " + variable.name + L" ", index + variable.name.length());
-				}
-			}
-		}
-	}
+	throw new std::exception("Not implemented");
 }
 
 void Parser::OperatorException(std::wstring &line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair> &indexPositions)
@@ -591,74 +405,6 @@ void Parser::DeleteDoubleSpaces(std::wstring &line)
 		line.replace(line.find(L"  "), 2, L" ");
 }
 
-void Parser::DeleteEnters()
-{
-	bool isContinue = false;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : mainString)
-	{
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		if (!line.empty() && !CheckInclude(line) && line.find(L"#define") == std::string::npos)
-		{
-			OperatorException(line, L"\n", L"", 1, -1, indexPositions);
-		}
-
-		// else if (!line.empty())
-		//	line = L"\n" + line;
-	}
-}
-
-void Parser::DeleteUnnecessarySpaces()
-{
-
-	bool isContinue = false;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : mainString)
-	{
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		// OperatorException(line, L" ' ", L"'", 2, -2, indexPositions);
-		OperatorException(line, L" ; ", L";", 2, -2, indexPositions);
-		OperatorException(line, L" , ", L",", 3, -2, indexPositions);
-		OperatorException(line, L" ( ", L"(", 2, -2, indexPositions);
-		OperatorException(line, L" [ ", L"[", 2, -2, indexPositions);
-		OperatorException(line, L" { ", L"{", 2, -2, indexPositions);
-		OperatorException(line, L" ) ", L")", 2, -2, indexPositions);
-		OperatorException(line, L" ] ", L"]", 2, -2, indexPositions);
-		OperatorException(line, L" } ", L"}", 2, -2, indexPositions);
-
-		OperatorException(line, L"( ", L"(", 2, -1, indexPositions);
-		OperatorException(line, L"[ ", L"[", 2, -1, indexPositions);
-		OperatorException(line, L"{ ", L"{", 2, -1, indexPositions);
-		OperatorException(line, L" )", L")", 2, -1, indexPositions);
-		OperatorException(line, L" ]", L"]", 2, -1, indexPositions);
-		OperatorException(line, L" }", L"}", 2, -1, indexPositions);
-		// OperatorException(line, L"' ", L"'", 2, -1, indexPositions);
-		// OperatorException(line, L" '", L"'", 2, -1, indexPositions);
-
-		for (auto &o : special_operators)
-			OperatorException(line, L" " + o + L" ", o, 4, -2, indexPositions);
-
-		for (auto &o : operators)
-			OperatorException(line, L" " + o + L" ", o, 3, -2, indexPositions);
-
-		OperatorException(line, L"\t", L"", 1, -1, indexPositions);
-		// OperatorException(line, L", ", L",", 2, -1, indexPositions);
-		OperatorException(line, L" ,", L",", 2, -1, indexPositions);
-		OperatorException(line, L"; ", L";", 2, -1, indexPositions);
-		OperatorException(line, L" ;", L";", 2, -1, indexPositions);
-	}
-}
-
 void Parser::AddExpectionsWords()
 {
 	// mapVariables.insert(Pair(L" operator ", L"operator"));
@@ -673,339 +419,14 @@ void Parser::AddExpectionsWords()
 	// variables.insert(variables.begin(), Variable(word, newName, typeOfVariable));
 }
 
-int Parser::FindForLoop(int startIndex)
+
+bool Parser::Update(std::vector<int> &settings)
 {
-	int index = -1;
-
-	std::vector<indexPair> indexBlockPosition = FindBlockIndex();
-
-	int countOfRange = 0;
-	bool isSecondLoopInRange = false;
-
-	for (int i = startIndex; i < mainString.size(); i++)
-	{
-
-		if (!indexBlockPosition.empty())
-		{
-			for (auto &indexes : indexBlockPosition)
-			{
-				if (i < indexes.first)
-					break;
-
-				if (i >= indexes.first && i <= indexes.second)
-				{
-					i = (int)(indexes.second + 1);
-				}
-			}
-		}
-
-		if (isSecondLoopInRange && !mainString[i].empty() && mainString[i].find(L"for") != std::wstring::npos && countOfRange == 1)
-		{
-			return index;
-		}
-
-		if (isSecondLoopInRange && !mainString[i].empty())
-		{
-			int pos = CountOfRangeChars(mainString[i]);
-			countOfRange += pos;
-
-			if (pos < 0 && countOfRange == 0)
-				isSecondLoopInRange = false;
-		}
-
-		if (!mainString[i].empty() && mainString[i].find(L" for ") != std::wstring::npos)
-		{
-
-			isSecondLoopInRange = true;
-			countOfRange += CountOfRangeChars(mainString[i]);
-			index = i;
-		}
-	}
-	return -1;
+	return true;
 }
 
-int Parser::LengthOfLoop(int startIndex)
+bool Parser::DoTechnique()
 {
-	bool isStartedRange = false;
-	int length = 0;
-	int countOfRange = 0;
-	int index = startIndex;
-
-	//check
-	while (true)
-	{
-		length++;
-		if (isStartedRange == false && countOfRange == 0 && CountOfRangeChars(mainString[index]) > 0)
-			isStartedRange = true;
-		countOfRange += CountOfRangeChars(mainString[index]);
-
-		if (isStartedRange == true && countOfRange == 0)
-			break;
-
-		index++;
-	}
-
-	return length;
-}
-//check
-int Parser::LengthOfSecondLoop(int startIndex, std::vector<std::wstring> wstringTab)
-{
-	int lengthOfSecondLoop = 0;
-	int countOfSecondRange = 0;
-	while (countOfSecondRange != 0)
-	{
-		lengthOfSecondLoop++;
-		countOfSecondRange += CountOfRangeChars(wstringTab[startIndex]);
-		startIndex++;
-	}
-	return (countOfSecondRange == 0) ? lengthOfSecondLoop : 0;
-}
-
-void Parser::GetVariablesFromFor(std::wstring lineFor, std::wstring *tab, short index, wchar_t _char)
-{
-	std::vector<std::wstring> contSplitedBySemicolon;
-	std::vector<std::wstring> contSplitedByLowlyChar;
-
-	Split(lineFor, contSplitedBySemicolon, L';');
-	Split(contSplitedBySemicolon[1], contSplitedByLowlyChar, _char);
-	tab[0] = contSplitedByLowlyChar[1];
-	tab[1] = contSplitedByLowlyChar[3];
-
-	contSplitedBySemicolon.erase(contSplitedBySemicolon.begin(), contSplitedBySemicolon.end());
-	contSplitedByLowlyChar.erase(contSplitedByLowlyChar.begin(), contSplitedByLowlyChar.end());
-}
-
-int Parser::GetNameForChangeLoop(std::wstring lineLoop, std::wstring lineLoopSecond, std::wstring &nameOfVar)
-{
-
-	std::vector<std::wstring> contSplitedBySemicolon;
-	std::vector<std::wstring> contSplitedByLowlyChar;
-
-	Split(lineLoop, contSplitedBySemicolon, L';');
-	Split(contSplitedBySemicolon[2], contSplitedByLowlyChar, L' ');
-	if (contSplitedByLowlyChar.size() == 5) // i += 5
-	{
-		if (contSplitedByLowlyChar[2].compare(L"+=") != 0 && contSplitedByLowlyChar[2].compare(L"++") != 0)
-			return 1;
-
-		if (contSplitedByLowlyChar[2].compare(L"++") == 0)
-			contSplitedByLowlyChar[3] = L"1";
-		nameOfVar = L" ( " + nameOfVar + L" * " + contSplitedByLowlyChar[3] + L" ) ";
-	}
-	else if (contSplitedByLowlyChar.size() == 7)
-	{ // i = i + 5;
-		if (contSplitedByLowlyChar[4].compare(L"+") != 0)
-			return 1;
-
-		if (contSplitedByLowlyChar[5].empty())
-			contSplitedByLowlyChar[5] = L"1";
-		nameOfVar = L" ( " + nameOfVar + L" * " + contSplitedByLowlyChar[5] + L" ) ";
-	}
-
-	contSplitedByLowlyChar.erase(contSplitedByLowlyChar.begin(), contSplitedByLowlyChar.end());
-
-	Split(contSplitedBySemicolon[0], contSplitedByLowlyChar, L'=');
-
-	while (contSplitedByLowlyChar[1].find(L' ') != std::string::npos)
-	{
-		contSplitedByLowlyChar[1].erase(contSplitedByLowlyChar[1].find(L' '), 1);
-	}
-	if (contSplitedByLowlyChar[1].compare(L"0") != 0)
-		return 1;
-
-	contSplitedBySemicolon.erase(contSplitedBySemicolon.begin(), contSplitedBySemicolon.end());
-	contSplitedByLowlyChar.erase(contSplitedByLowlyChar.begin(), contSplitedByLowlyChar.end());
-
-	Split(lineLoopSecond, contSplitedBySemicolon, L';');
-	Split(contSplitedBySemicolon[0], contSplitedByLowlyChar, L'=');
-
-	while (contSplitedByLowlyChar[1].find(L' ') != std::string::npos)
-	{
-		contSplitedByLowlyChar[1].erase(contSplitedByLowlyChar[1].find(L' '), 1);
-	}
-	if (contSplitedByLowlyChar[1].compare(L"0") != 0)
-		return 1;
-	return 0;
-}
-
-void Parser::RemoveBracketOfSecondLoop(int startIndex, int loopLength, std::vector<std::wstring> &wstringTab)
-{
-	int countOfRange = 0;
-	for (int i = startIndex; i < loopLength - 1; i++)
-	{ // 1
-		int cOR = CountOfRangeChars(wstringTab[i]);
-		countOfRange += cOR;
-		if (cOR > 0 && countOfRange == 1) //>0
-			wstringTab[i].replace(wstringTab[i].find(L'{'), 1, L" ");
-		else if (cOR < 0 && countOfRange == 0) //>= 0
-			wstringTab[i].replace(wstringTab[i].find(L'}'), 1, L" ");
-	}
-}
-
-int Parser::ChangeLoop(int indexLoop)
-{
-	int indexOfLoop = FindForLoop(indexLoop);
-	if (indexOfLoop == -1)
-		return -1;
-	int indexOfSecondLoop = 0;
-	int loopLength = LengthOfLoop(indexOfLoop);
-	int index = 0;
-	std::vector<std::wstring> copyOfLoop(loopLength);
-
-	std::vector<std::wstring> contSplitedBySemicolon;
-	std::vector<std::wstring> contSplitedByLowlyChar;
-
-	std::wstring nameOfVar1[2];
-	std::wstring nameOfVar2[2];
-
-	std::wstring nameOfVar2If;
-
-	for (int i = 0; i < loopLength; i++)
-		copyOfLoop[i].assign(mainString[i + indexOfLoop]);
-
-	GetVariablesFromFor(copyOfLoop[0], nameOfVar1, 1, L' ');
-	for (int i = 1; i < loopLength; i++)
-	{
-		if (copyOfLoop[i].find(L"for") != std::string::npos)
-		{
-			GetVariablesFromFor(copyOfLoop[i], nameOfVar2, 1, L' ');
-			indexOfSecondLoop = i;
-			break;
-		}
-	}
-
-	nameOfVar2If = nameOfVar2[1];
-
-	if (GetNameForChangeLoop(copyOfLoop[0], copyOfLoop[indexOfSecondLoop], nameOfVar2If))
-		return indexOfLoop + loopLength;
-
-	// indexOfLoop + loopLength;
-
-	copyOfLoop.erase(copyOfLoop.begin() + indexOfSecondLoop);
-
-	std::wstring forMain = L"for( int t = 0 ; t < ( " + nameOfVar1[1] + L" * " + nameOfVar2[1] + L" ) ; t ++ )\n\0";
-	copyOfLoop.front() = forMain;
-
-	int diff;
-	for (int i = 1; i < loopLength - 1; i++)
-	{
-		index = 0;
-		diff = 0;
-		while (true)
-		{
-			if (!copyOfLoop[i].empty() && copyOfLoop[i].find(L" " + nameOfVar1[0] + L" ", index) != std::string::npos)
-			{
-				index = (int)(copyOfLoop[i].find(L" " + nameOfVar1[0] + L" ", index));
-				copyOfLoop[i].replace(index + 1, nameOfVar1[0].length(), L" ( t / " + nameOfVar2If + L" ) ");
-				diff = (int)(nameOfVar2[1].length() - nameOfVar1[0].length());
-				index++;
-			}
-			else
-				break;
-		}
-
-		index = 0;
-		diff = (int)(nameOfVar2[1].length() - nameOfVar2[0].length());
-		while (true)
-		{
-			if (!copyOfLoop[i].empty() && copyOfLoop[i].find(L" " + nameOfVar2[0] + L" ", index) != std::string::npos)
-			{
-				index = (int)(copyOfLoop[i].find(L" " + nameOfVar2[0] + L" ", index));
-				copyOfLoop[i].replace(index + 1, nameOfVar2[0].length(), L" ( t % " + nameOfVar2If + L" ) ");
-				index++;
-			}
-			else
-				break;
-		}
-	}
-
-	int lengthOfSecondLoop = LengthOfSecondLoop(indexOfSecondLoop, copyOfLoop);
-	RemoveBracketOfSecondLoop(indexOfSecondLoop, loopLength, copyOfLoop);
-
-	// if
-
-	bool isSomething = false;
-	for (int i = 1; i < indexOfSecondLoop; i++)
-	{
-		if (!copyOfLoop[i].empty())
-			for (auto &_char : copyOfLoop[i])
-			{
-				if (((_char >= 65) && (_char <= 90)) || ((_char >= 97) && (_char <= 122)))
-				{
-					isSomething = true;
-					break;
-				}
-			}
-		if (isSomething)
-			break;
-	}
-
-	if (isSomething)
-	{
-		std::wstring ifwstring = L"\t if( t % ( " + nameOfVar2If + L" ) == 0 )\n\0";
-		copyOfLoop.insert(copyOfLoop.begin() + 2, ifwstring);
-		copyOfLoop.insert(copyOfLoop.begin() + 3, L"{\n\0");
-		copyOfLoop.insert(copyOfLoop.begin() + indexOfSecondLoop + 2, L"}\n\0");
-		indexOfSecondLoop += 3;
-	}
-
-	isSomething = false;
-	for (int i = indexOfSecondLoop + lengthOfSecondLoop; i < copyOfLoop.size() - 1; i++)
-	{
-		if (!copyOfLoop[i].empty())
-			for (auto &_char : copyOfLoop[i])
-			{
-				if (((_char >= 65) && (_char <= 90)) || ((_char >= 97) && (_char <= 122)))
-				{
-					isSomething = true;
-					break;
-				}
-			}
-		if (isSomething)
-			break;
-	}
-
-	if (isSomething)
-	{
-		std::wstring ifwstring = L"\t if( t % ( " + nameOfVar2If + L" ) == 0 )\n\0";
-		copyOfLoop.insert(copyOfLoop.begin() + indexOfSecondLoop + lengthOfSecondLoop, ifwstring);
-		copyOfLoop.insert(copyOfLoop.begin() + indexOfSecondLoop + lengthOfSecondLoop + 1, L"{\n\0");
-		copyOfLoop.insert(copyOfLoop.end() - 1, L"}\n\0");
-	}
-
-	// indexOfSecondLoop = i;
-
-	mainString.erase(mainString.begin() + indexOfLoop, mainString.begin() + indexOfLoop + loopLength);
-	mainString.insert(mainString.begin() + indexOfLoop, copyOfLoop.begin(), copyOfLoop.end());
-	return (int)(indexOfLoop + copyOfLoop.size());
-}
-
-void Parser::ChangeLoops()
-{
-	int index = 0;
-	while (index != -1)
-	{
-		index = ChangeLoop(index);
-	}
-
-	std::vector<indexPair> indexBlockPosition = FindBlockIndex();
-	for (const auto &indexes : indexBlockPosition)
-	{
-		this->mainString[indexes.first].erase();
-		this->mainString[indexes.second].erase();
-	}
-}
-
-void Parser::AddJunks(int amountOfVariables, int amountOfJunk)
-{
-	Junker *junker = new Junker(&mainString, &variables);
-	junker->FindJunkPlace(amountOfVariables, amountOfJunk);
-	delete junker;
-}
-
-void Parser::AddEncryption(bool toFile, bool onlyFors)
-{
-	Encryption *encryption = new Encryption(&mainString);
-	encryption->MakeEncryption(toFile, onlyFors);
-	delete encryption;
+	SpaceOperators();
+	return true;
 }

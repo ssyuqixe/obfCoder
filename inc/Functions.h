@@ -1,10 +1,24 @@
-#pragma once
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <random>
+
 typedef std::pair<size_t, size_t> indexPair;
 
 //check later why it is hardcoded
 const int specialVariables = 2;	
+
+struct RandomEngine{
+	std::random_device rd;
+	std::mt19937 gen;
+	RandomEngine() : gen(rd()) {}
+};
+static RandomEngine randomEngine;
+
 
 struct Variable {
 	int isPointer;
@@ -32,6 +46,7 @@ inline int CountOfRangeChars(const std::wstring& wstringLine)
 
 	return countOfRange;
 }
+
 
 template<class T>
 inline void Split(const std::wstring& str, T& cont, wchar_t wchar)
@@ -95,7 +110,7 @@ inline std::wstring RandomUnicode(size_t len, size_t start, size_t end)
 	size_t intervalLength = end - start + 1;
 
 	for (int i = 0; i < len; i++)
-		ustr[i] = (wchar_t)((rand() % intervalLength) + start);
+		ustr[i] = (wchar_t)((randomEngine.gen() % intervalLength) + start);
 	return ustr;
 }
 
@@ -112,10 +127,13 @@ inline std::wstring RandomUnicodeUntilNewValue(size_t len, size_t start, size_t 
 		isUnique = true;
 		for (int i = 0; i < container.size(); i++)
 			if (container[i].compare(newString) == 0){
-				isUniuqe = false;
+				isUnique = false;
 				newString =  RandomUnicode(len, start, end);
 				break;
 			}
 	} while(isUnique == false);
 	return newString;
 }
+
+
+#endif // FUNCTIONS_H
