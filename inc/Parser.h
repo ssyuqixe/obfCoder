@@ -2,6 +2,7 @@
 #define PARSER_H
 #include "Functions.h"
 #include "FileHandling.h"
+#include "Component.h"
 
 #include <iostream>
 #include <string>
@@ -13,11 +14,12 @@
 typedef std::pair<std::wstring, std::wstring> Pair;
 typedef std::multimap<std::wstring, std::wstring> MapCode;
 
-class Parser
+class Parser : public Component
 {
 private:
 	std::vector<std::wstring>* mainString;
 	std::vector<std::wstring> splitedLine;
+    std::string tag = "Parser";
 	std::vector<std::wstring> special_operators{ L"+=", L"-=", L"*=", L"/=", L"<=",L">=",L"++", L"--", L"!=", L"//", L"<<", L">>", L"**", L"->", L"||" };
 	std::vector<std::wstring> operators{ L"=",L"+", L"-", L"/", L"*", L"%", L"&", L"<", L">", L"^", L"!", L"?", L",", L"." }; 
 
@@ -57,9 +59,10 @@ public:
 	//temporary solution
 	std::vector<Variable>* GetVariables() { return &variables; }
 
-	void AddJunks(int amountOfVariables, int amountOfJunk);
-
-	void AddEncryption(bool toFile = false, bool onlyFors = false);
+	bool Update(std::vector<int> &settings) override;
+	bool DoTechnique() override;
+    std::string GetTag() override { return tag; };
+    void SetTag(std::string tag) override { this->tag = tag;};
 
 };
 

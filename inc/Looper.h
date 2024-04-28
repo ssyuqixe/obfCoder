@@ -6,6 +6,7 @@
 class Looper : public Component
 {
 	std::vector<std::wstring>* p_ContentFile;
+    std::string tag = "Looper";
 
     //todo: delete later to get it from Parser class
     //or bring to Functions.h (prob not)
@@ -28,6 +29,8 @@ public:
 
     bool Update(std::vector<int> &settings) override;
     bool DoTechnique() override;
+    std::string GetTag() override { return tag; };
+    void SetTag(std::string tag) override { this->tag = tag;};
 };
 
 #endif // LOOPER_H

@@ -4,6 +4,8 @@
 #include <QtWidgets/QMainWindow>
 //#include <qfiledialog.h>
 #include "ui_GUI.h" // <ui_GUI.h>
+#include "Manager.h"
+#include "FileHandling.h"
 //#include <qprocess.h>
 
 class GUI : public QMainWindow
@@ -15,6 +17,9 @@ public:
 
 private:
 
+	Manager manager;
+    FileHandling file;
+    
     Ui::GUIClass ui;
 private slots:
     void on_addButton_clicked();
@@ -22,6 +27,8 @@ private slots:
     void on_saveButton_clicked();
     void on_encBox_changed();
     void on_delBox_changed();
+    void on_delEnters_changed();
+    void on_delSpaces_changed();
     void on_addJunk_changed();
     void on_chgLoopBox_changed();
     void on_chgVarBox_changed();

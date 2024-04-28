@@ -69,49 +69,51 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 		int option = -1;
 
 		bool isAllFalse = true;
-		for(const auto &option : settings::junkerOptions)
-			if(option == true){
+		for (const auto &option : settings::junkerOptions)
+			if (option == true)
+			{
 				isAllFalse = false;
 				break;
-				}
-		
-		if(!isAllFalse)
-		for (int i = 0; i < amountOfJunk; i++)
-		{
-			option = -1;
-			
-			while(option == -1){
-				option = randomEngine.gen() % settings::junkerOptions.size();
-				if(settings::junkerOptions[option] == false)
-					option = -1;
 			}
-			switch (option)
+
+		if (!isAllFalse)
+			for (int i = 0; i < amountOfJunk; i++)
 			{
-			case 0:
-				AddJunk(index, variableData, L"+=", contBlockedSpace);
-				break;
-			case 1:
-				AddJunk(index, variableData, L"-=", contBlockedSpace);
-				break;
-			case 2:
-				AddJunk(index, variableData, L"*=", contBlockedSpace);
-				break;
-			case 3:
-				AddForConnected(index, variableData, contBlockedSpace);
-				break;
-			case 4:
-				AddForSemiConnected(index, variableData, contBlockedSpace);
-				break;
-			case 5:
-				AddForUnconnected(index, contBlockedSpace);
-				break;
-			case 6:
-				AddJunkInc(index, variableData, contBlockedSpace);
-				break;
-			default:
-				break;
+				option = -1;
+
+				while (option == -1)
+				{
+					option = randomEngine.gen() % settings::junkerOptions.size();
+					if (settings::junkerOptions[option] == false)
+						option = -1;
+				}
+				switch (option)
+				{
+				case 0:
+					AddJunk(index, variableData, L"+=", contBlockedSpace);
+					break;
+				case 1:
+					AddJunk(index, variableData, L"-=", contBlockedSpace);
+					break;
+				case 2:
+					AddJunk(index, variableData, L"*=", contBlockedSpace);
+					break;
+				case 3:
+					AddForConnected(index, variableData, contBlockedSpace);
+					break;
+				case 4:
+					AddForSemiConnected(index, variableData, contBlockedSpace);
+					break;
+				case 5:
+					AddForUnconnected(index, contBlockedSpace);
+					break;
+				case 6:
+					AddJunkInc(index, variableData, contBlockedSpace);
+					break;
+				default:
+					break;
+				}
 			}
-		}
 		_amountOfVariables++;
 	}
 }
@@ -261,9 +263,7 @@ void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexP
 	junkCode.push_back(L"\t " + variable->name + L" ++; }\n\0");
 	junkCode.push_back(L"\t " + variable->name + L" -= " + random + L";\n\0");
 
-
 	InsertJunkToCode(junkCode, index, contBlockedSpace);
-
 }
 
 void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
@@ -313,7 +313,8 @@ void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSp
 	InsertJunkToCode(junkCode, index, contBlockedSpace);
 }
 
-void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace){
+void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace)
+{
 	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
 		index++;
 
@@ -325,11 +326,16 @@ void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, s
 
 bool Junker::Update(std::vector<int> &settings)
 {
-	if(settings.size() != 2)
-		return false;
-	amountOfVariables = settings[0];
-	amountOfJunk = settings[1];
-	return true;
+	if(settings.size() == 1)
+		p_Parser->FindVariables();
+	else if (settings.size() == 2)
+	{
+		amountOfVariables = settings[0];
+		amountOfJunk = settings[1];
+		return true;
+	}
+
+	return false;
 }
 
 bool Junker::DoTechnique()

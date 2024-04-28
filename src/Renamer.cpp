@@ -6,6 +6,9 @@
 
 bool Renamer::Update(std::vector<int> &settings)
 {
+	if(p_Parser == nullptr)
+		return false;
+	p_Parser->FindVariables();
     return true;
 }
 

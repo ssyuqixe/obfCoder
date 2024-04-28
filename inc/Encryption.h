@@ -9,7 +9,8 @@
 class Encryption : public Component
 {
 private:
-	std::vector<std::wstring>* p_ContentFile;
+	std::vector<std::wstring>* p_ContentFile = nullptr;
+    std::string tag = "Encryption";
 	std::wstring m_keyVariable;
 	bool m_toFile;
 	bool m_onlyFors;
@@ -28,6 +29,8 @@ public:
 	
 	bool Update(std::vector<int> &settings) override;
 	bool DoTechnique() override;
+    std::string GetTag() override { return tag; };
+    void SetTag(std::string tag) override { this->tag = tag;};
 };
 
 #endif // ENCRYPTION_H

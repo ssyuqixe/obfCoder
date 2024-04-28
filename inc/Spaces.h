@@ -9,6 +9,7 @@
 class Spaces : public Component
 {
     std::vector<std::wstring> *p_ContentFile;
+    std::string tag = "Spaces";
 
     //todo: delete it later
     bool IsContinue(std::vector<indexPair> indexPosition, bool isContinue);
@@ -23,6 +24,8 @@ public:
 
     bool Update(std::vector<int> &settings) override;
     bool DoTechnique() override;
+    std::string GetTag() override { return tag; };
+    void SetTag(std::string tag) override { this->tag = tag;};
 };
 
 

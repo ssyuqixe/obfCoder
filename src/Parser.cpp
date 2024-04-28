@@ -135,6 +135,7 @@ void Parser::SpaceOperators()
 
 		DeleteDoubleSpaces(line);
 	}
+	FindVariables();
 }
 
 // Add space after search variable names e.g. for a constructor
@@ -475,16 +476,13 @@ void Parser::ChangeLoops()
  throw new std::exception("Not implemented");
 }
 
-void Parser::AddJunks(int amountOfVariables, int amountOfJunk)
+bool Parser::Update(std::vector<int> &settings)
 {
-	Junker junker(&*mainString, &variables);
-	junker.Update(std::vector<int>({amountOfVariables, amountOfJunk}));
-	junker.DoTechnique();
+	return true;
 }
 
-void Parser::AddEncryption(bool toFile, bool onlyFors)
+bool Parser::DoTechnique()
 {
-	Encryption encryption(&*mainString);
-	encryption.Update(std::vector<int>({toFile, onlyFors}));
-	encryption.DoTechnique();
+	SpaceOperators();
+	return true;
 }

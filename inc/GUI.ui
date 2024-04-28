@@ -381,7 +381,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QCheckBox" name="cb_DeleteSpace">
+    <widget class="QCheckBox" name="cb_DeleteSpaces">
      <property name="enabled">
       <bool>true</bool>
      </property>

@@ -38,6 +38,7 @@ set(OBF_SOURCES
     src/Encryption.cpp
     src/Junker.cpp
     src/FileHandling.cpp
+    src/Manager.cpp
 	src/Comments.cpp
 	src/Looper.cpp
 	src/Enters.cpp

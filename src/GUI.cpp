@@ -1,7 +1,8 @@
 #include "GUI.h"
 #include "Parser.h"
 #include "Settings.h"
-//replace it later by manager
+#include "Manager.h"
+// replace it later by manager
 #include "Comments.h"
 #include "Renamer.h"
 #include "Looper.h"
@@ -20,6 +21,8 @@ GUI::GUI(QWidget *parent)
 	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(on_addButton_clicked()));
 	connect(ui.cb_Encryption, SIGNAL(clicked(bool)), this, SLOT(on_encBox_changed()));
 	connect(ui.cb_deleteComments, SIGNAL(clicked(bool)), this, SLOT(on_delBox_changed()));
+	connect(ui.cb_DeleteEnters, SIGNAL(clicked(bool)), this, SLOT(on_delEnters_changed()));
+	connect(ui.cb_DeleteSpaces, SIGNAL(clicked(bool)), this, SLOT(on_delSpaces_changed()));
 	connect(ui.cb_AddJunk, SIGNAL(clicked(bool)), this, SLOT(on_addJunk_changed()));
 	connect(ui.cb_changeLoops, SIGNAL(clicked(bool)), this, SLOT(on_chgLoopBox_changed()));
 	connect(ui.cb_ChangeVariables, SIGNAL(clicked(bool)), this, SLOT(on_chgVarBox_changed()));
@@ -39,6 +42,19 @@ void GUI::on_loadButton_clicked()
 
 	ui.lineEdit->setText(settings::inFileName);
 	ui.fileNameLabelIn->setText("Input File Name: " + settings::inFileName.split('/').last());
+
+	file.LoadFile(settings::inFileName.toLocal8Bit().constData());
+	ui.textBrowser->clear();
+
+	if (file.IsOpen() == false)
+	{
+		ui.textBrowser->append("File was empty or not loaded!");
+		return;
+	}
+
+	// set default settings for the method
+	// temporary solution
+	manager.DefaultSetup(file.GetContent());
 }
 
 void GUI::on_saveButton_clicked()
@@ -58,19 +74,6 @@ void GUI::on_saveButton_clicked()
 
 void GUI::on_addButton_clicked()
 {
-	srand(time(NULL));
-
-	clock_t sumTimeMain = 0;
-	// for (int i = 0; i < 100; i++) {
-	FileHandling file;
-	Parser *newParser = new Parser(file.LoadFile(settings::inFileName.toLocal8Bit().constData()));
-	ui.textBrowser->clear();
-
-	if (file.IsOpen() == false)
-	{
-		ui.textBrowser->append("File was empty or not loaded!");
-		return;
-	}
 
 	if (settings::inFileName == "notSelected" || settings::outFileName == "notSelected")
 	{
@@ -78,105 +81,41 @@ void GUI::on_addButton_clicked()
 		return;
 	}
 
-	//ui.b_openFile->setEnabled(false);
+	file.ReloadFile();
+	if (file.IsOpen() == false)
+	{
+		ui.textBrowser->append("File is not loaded!");
+		return;
+	}
+	clock_t sumTimeMain = 0;
+
+	manager.StateComponent("Parser", bool(settings::countOfSettings > 0));
+	auto junker = manager.GetComponent("Junker");
+	if (junker)
+		junker->Update(std::vector<int>({1}));
+
 	clock_t time;
-	clock_t sumtime = 0;
-	if (ui.cb_deleteComments->isChecked())
+	clock_t sumTime = 0;
+	auto components = manager.GetComponents();
+	auto status = manager.GetComponentsStatus();
+	for (size_t iComponent = 0; iComponent < components->size(); iComponent++)
 	{
-		time = clock();
-		Comments comments(file.GetContent());
-		comments.DoTechnique();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted comments - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (settings::countOfSettings > 0)
-	{
+		std::cout << components->at(iComponent)->GetTag() << " " << status->at(iComponent) << "\n";
+		if (status->at(iComponent) == false)
+			continue;
 
 		time = clock();
-		newParser->SpaceOperators();
+		components->at(iComponent)->DoTechnique();
 		time = clock() - time;
-		ui.textBrowser->append("Parsered text - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
+		ui.textBrowser->append(QString::fromStdString(components->at(iComponent)->GetTag()) + " - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
+		sumTime += time;
 	}
 
-	if (ui.cb_changeLoops->isChecked())
-	{
-		time = clock();
-		Looper looper(file.GetContent());
-		looper.DoTechnique();
-		time = clock() - time;
-		ui.textBrowser->append("Changed loops - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
+	ui.textBrowser->append("Summary: " + QString::number((double)sumTime / CLOCKS_PER_SEC, 'f', 4) + "s.");
 
-	if (ui.cb_AddJunk->isChecked())
-	{
-		if (settings::junkerOptions.empty() == false)
-		{
-			time = clock();
-			newParser->FindVariables();
-			newParser->AddJunks(ui.sp_AmountVariables->value(), ui.sp_AmountCodes->value());
-			time = clock() - time;
-			ui.textBrowser->append("Added code - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-			sumtime += time;
-		}
-		else
-			ui.textBrowser->append("Adding additional code failed because no options were selected!");
-	}
-
-	if (ui.cb_ChangeVariables->isChecked())
-	{
-		time = clock();
-		Renamer renamer(file.GetContent());
-		newParser->FindVariables();
-		renamer.SetVariables(newParser->GetVariables());
-		renamer.DoTechnique();
-		time = clock() - time;
-		ui.textBrowser->append("Renamed variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (ui.cb_Encryption->isChecked())
-	{
-		time = clock();
-		newParser->AddEncryption(ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked());
-		time = clock() - time;
-		ui.textBrowser->append("Encryption of variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (ui.cb_DeleteEnters->isChecked())
-	{
-		time = clock();
-		Enters enters(file.GetContent());
-		enters.DoTechnique();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted transition to the new line - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	if (ui.cb_DeleteSpace->isChecked())
-	{
-		time = clock();
-		Spaces spaces(file.GetContent());
-		spaces.DoTechnique();
-		time = clock() - time;
-		ui.textBrowser->append("Deleted spaces - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
-		sumtime += time;
-	}
-
-	ui.textBrowser->append("Summary: " + QString::number((double)sumtime / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	//	sumTimeMain += sumtime;
 	file.SaveFile(settings::outFileName.toLocal8Bit().constData());
-	// sumTimeMain += sumtime;
-	delete newParser;
-	//}
 
 	ui.b_openFile->setEnabled(true);
-	// ui.textBrowser->append("Total time: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC, 'f', 4) + "s.");
-	// ui.textBrowser->append("Mean: " + QString::number((double)sumTimeMain / CLOCKS_PER_SEC / 100, 'f', 4) + "s.");
 }
 
 void GUI::on_encBox_changed()
@@ -186,12 +125,17 @@ void GUI::on_encBox_changed()
 		ui.cb_EncOnlyFor->setEnabled(true);
 		ui.cb_EncToFile->setEnabled(true);
 		settings::countOfSettings++;
+		auto encryption = manager.GetComponent("Encryption");
+		if (encryption)
+			encryption->Update(std::vector<int>({ui.cb_EncToFile->isChecked(), ui.cb_EncOnlyFor->isChecked()}));
+		manager.StateComponent("Encryption", true);
 	}
 	else
 	{
 		ui.cb_EncOnlyFor->setEnabled(false);
 		ui.cb_EncToFile->setEnabled(false);
 		settings::countOfSettings--;
+		manager.StateComponent("Encryption", false);
 	}
 }
 
@@ -200,14 +144,26 @@ void GUI::on_delBox_changed()
 	if (ui.cb_deleteComments->isChecked())
 	{
 		ui.cb_DeleteEnters->setEnabled(true);
+		manager.StateComponent("Comments", true);
 	}
 	else
 	{
 		ui.cb_DeleteEnters->setEnabled(false);
 		ui.cb_DeleteEnters->setChecked(false);
+		// todo: check if enters is active
+		manager.StateComponent("Comments", false);
 	}
 }
 
+void GUI::on_delEnters_changed()
+{
+	manager.StateComponent("Enters", ui.cb_DeleteEnters->isChecked());
+}
+
+void GUI::on_delSpaces_changed()
+{
+	manager.StateComponent("Spaces", ui.cb_DeleteSpaces->isChecked());
+}
 void GUI::on_addJunk_changed()
 {
 	if (ui.cb_AddJunk->isChecked())
@@ -224,6 +180,10 @@ void GUI::on_addJunk_changed()
 		ui.cb_JunkerSemiConnected->setEnabled(true);
 		ui.cb_JunkerNonConnected->setEnabled(true);
 		ui.cb_JunkerInc->setEnabled(true);
+		auto junker = manager.GetComponent("Junker");
+		if (junker)
+			junker->Update(std::vector<int>({ui.sp_AmountVariables->value(), ui.sp_AmountCodes->value()}));
+		manager.StateComponent("Junker", true);
 	}
 	else
 	{
@@ -239,6 +199,7 @@ void GUI::on_addJunk_changed()
 		ui.cb_JunkerSemiConnected->setEnabled(false);
 		ui.cb_JunkerNonConnected->setEnabled(false);
 		ui.cb_JunkerInc->setEnabled(false);
+		manager.StateComponent("Junker", false);
 	}
 }
 
@@ -247,10 +208,12 @@ void GUI::on_chgLoopBox_changed()
 	if (ui.cb_changeLoops->isChecked())
 	{
 		settings::countOfSettings++;
+		manager.StateComponent("Looper", true);
 	}
 	else
 	{
 		settings::countOfSettings--;
+		manager.StateComponent("Looper", false);
 	}
 }
 
@@ -259,17 +222,25 @@ void GUI::on_chgVarBox_changed()
 	if (ui.cb_ChangeVariables->isChecked())
 	{
 		settings::countOfSettings++;
+		auto renamer = manager.GetComponent("Renamer");
+		if (renamer)
+		{
+			std::cout << "1";
+			if (renamer->Update(std::vector<int>()))
+				manager.StateComponent("Renamer", true);
+			std::cout << "3";
+		}
 	}
 	else
 	{
 		settings::countOfSettings--;
+		manager.StateComponent("Renamer", false);
 	}
 }
 
 void GUI::on_openButton_clicked()
 {
 	ui.textBrowser->append("Debug: setted");
-
 }
 
 void JunkerOption(bool isChecked, int value)
