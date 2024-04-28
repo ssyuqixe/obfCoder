@@ -2,72 +2,257 @@
 #include "Functions.h"
 #include "Settings.h"
 #include <iostream>
-#include <sstream>
-#include <fstream>
-#include <random>
-#include <codecvt>
+#include <vector>
+#include <string>
 
-void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
+int Junker::RandomIndexForJunk(int &size)
 {
-	// change later the random engine
-	srand(time(NULL));
-	int _amountOfVariables = 0;
-	while (_amountOfVariables < amountOfVariables && p_Variables->size() > specialVariables)
+	int index = 0;
+	bool isIndexBlocked = false;
+	unsigned char nonStuckCounter = 0;
+	do
 	{
-		int size = (int)(p_ContentFile->size());
-		int index = randomEngine.gen() % size;
-		bool isVariable = false;
-		int diffrence = 1;
-		Variable *variableData = nullptr;
-		std::vector<indexPair> contBlockedSpace = FindBlockedIndexForJunk();
-
-		unsigned char isIndexBlocked = 0;
-		bool downIndexBlocked = false;
-		bool upIndexBlocked = false;
-
-		for (auto const &pair : contBlockedSpace)
+		isIndexBlocked = false;
+		index = randomEngine.gen() % size;
+		for (auto const &pair : m_ImmutableLocations)
 			if (index >= pair.first || index <= pair.second)
 			{
-				isIndexBlocked = 1;
+				isIndexBlocked = true;
 				break;
 			}
-		if (isIndexBlocked == 0)
-			for (auto const &variable : *p_Variables)
-				isVariable = FindIndexToAddJunk(index, 0, variableData);
+		if (nonStuckCounter++ > 100)
+			return -1;
+	} while (isIndexBlocked == true);
 
-		while (isVariable == false)
+	return index;
+}
+
+bool Junker::FindIndexToAddJunk(int &index, int diffrence, Variable *&p_VariableData)
+{
+
+	if (index + diffrence >= p_ContentFile->size() || index + diffrence < 0)
+		return false;
+
+	std::vector<std::wstring> splittedLine;
+
+	for (auto &variable : *p_Variables)
+	{
+		if (!p_ContentFile->at(index + diffrence).empty() && p_ContentFile->at(index + diffrence).find(L" " + variable.name + L" ") != std::wstring::npos)
 		{
-			downIndexBlocked = false;
-			upIndexBlocked = false;
 
-			for (auto const &pair : contBlockedSpace)
+			int i_Variable = 0;
+			Split(p_ContentFile->at(index + diffrence), splittedLine, L' ');
+
+			while (splittedLine[i_Variable].compare(variable.name) != 0)
 			{
-				int plusindex = index + diffrence;
-				int minusindex = index - diffrence;
-				if (plusindex < size && (plusindex >= pair.first && plusindex <= pair.second))
-				{
-					upIndexBlocked = true;
-				}
-
-				if (minusindex >= 0 && (minusindex >= pair.first && minusindex <= pair.second))
-				{
-					downIndexBlocked = true;
-				}
+				i_Variable++;
 			}
 
-			if (upIndexBlocked == false)
-				isVariable = FindIndexToAddJunk(index, diffrence, variableData);
+			// exclude pointers and arrays from junking
+			if ((i_Variable - 1) >= 0 && (variable.isPointer > 0 || splittedLine[i_Variable - 1].compare(L"->") == 0 || splittedLine[i_Variable - 1].compare(L".") == 0) || splittedLine[i_Variable - 1].compare(L"]") == 0)
+				continue;
+			// exclude arrays and bool from junking
+			if (variable.isArray > 0 || variable.type.compare(L"bool") == 0)
+				continue;
+			// exclude const variables from junking
+			if (p_ContentFile->at(index + diffrence).find(L" const ") != std::wstring::npos && p_ContentFile->at(index + diffrence).find(L"const ") != std::wstring::npos)
+				continue;
 
-			if (isVariable == false && downIndexBlocked == false)
-				isVariable = FindIndexToAddJunk(index, -diffrence, variableData);
-
-			diffrence++;
-			if (diffrence > size)
-				throw "Not found variables";
+			index += diffrence;
+			p_VariableData = &variable;
+			return true;
 		}
-		// std::sort(settings::junkerOptions.begin(), settings::junkerOptions.end());
-		int option = -1;
+	}
+	return false;
+}
 
+std::vector<indexPair> Junker::FindBlockedIndexesForJunk()
+{
+	m_ImmutableLocations.clear();
+	int countOfRange = 0;
+	int i_Start = -1;
+	bool isInRange = false;
+	int sumCountOfRange = 0;
+	for (int i_Line = 0; i_Line < p_ContentFile->size(); i_Line++)
+	{
+		if (!p_ContentFile->at(i_Line).empty() && countOfRange == 0 && ((p_ContentFile->at(i_Line).find(L"class") != std::wstring::npos) || (p_ContentFile->at(i_Line).find(L"struct") != std::wstring::npos)))
+		{
+			i_Start = i_Line;
+			isInRange = true;
+		}
+
+		sumCountOfRange = CountOfRangeChars((*p_ContentFile)[i_Line]);
+		countOfRange += sumCountOfRange;
+
+		// i assume that, parser will be deleted cases like "class" and 2-3 new lines then "{"
+		if (i_Start != i_Line && isInRange == true && sumCountOfRange == 0 && countOfRange == 0)
+		{
+			m_ImmutableLocations.push_back(indexPair(i_Start, i_Line));
+			isInRange = false;
+		}
+	}
+
+	return m_ImmutableLocations;
+}
+
+int Junker::FindJunkPlace(Variable *&p_VariableData)
+{
+	if (p_Variables->size() <= specialVariables)
+		return -1;
+
+	int size = int(p_ContentFile->size());
+	m_ImmutableLocations = FindBlockedIndexesForJunk();
+	int index = RandomIndexForJunk(size);
+
+	bool isVariable = false;
+	bool downIndexBlocked = false;
+	bool upIndexBlocked = false;
+	int diffrence = 0;
+	int upIndex = index;
+	int downIndex = index;
+	do
+	{
+		downIndexBlocked = false;
+		upIndexBlocked = false;
+		upIndex = index + diffrence;
+		downIndex = index - diffrence;
+
+		if (upIndex >= size && downIndex < 0)
+			return -1;
+
+		for (auto const &pair : m_ImmutableLocations)
+		{
+			if (upIndex < size && (upIndex >= pair.first && upIndex <= pair.second))
+			{
+				upIndexBlocked = true;
+			}
+
+			if (downIndex >= 0 && (downIndex >= pair.first && downIndex <= pair.second))
+			{
+				downIndexBlocked = true;
+			}
+
+			if (upIndexBlocked == true && downIndexBlocked == true)
+				break;
+		}
+
+		if (upIndexBlocked == false && upIndex < size)
+			isVariable = FindIndexToAddJunk(index, diffrence, p_VariableData);
+
+		if (isVariable == false && downIndexBlocked == false && downIndex >= 0)
+			isVariable = FindIndexToAddJunk(index, -diffrence, p_VariableData);
+
+		diffrence++;
+	} while (isVariable == false);
+	return index;
+}
+
+void Junker::UpdateBlockedIndexes(int index, int change)
+{
+	for (auto &pair : m_ImmutableLocations)
+	{
+		if (index < pair.first)
+		{
+			pair.first += change;
+			pair.second += change;
+		}
+		else
+			return;
+	}
+}
+
+void Junker::AddJunk(int &index, Variable *&p_VariableData, std::wstring arithmeticOperation)
+{
+	wchar_t randomNumber = (randomEngine.gen() % 9) + 49;
+
+	std::wstring firstArthmeticExpression = L"\t " + p_VariableData->name + L" " + arithmeticOperation + L" " + randomNumber + L";\n\0";
+	if (arithmeticOperation.compare(L"*=") == 0)
+		arithmeticOperation = L"/=";
+	else if (arithmeticOperation.compare(L"/=") == 0)
+		arithmeticOperation = L"*=";
+	else if (arithmeticOperation.compare(L"+=") == 0)
+		arithmeticOperation = L"-=";
+	else if (arithmeticOperation.compare(L"-=") == 0)
+		arithmeticOperation = L"+=";
+
+	m_JunkCode.clear();
+	m_JunkCode.insert(m_JunkCode.begin(),
+					  {firstArthmeticExpression,
+					   {L"\t " + p_VariableData->name + L" " + arithmeticOperation + L" " + randomNumber + L";\n\0"}});
+	InsertJunkToCode(index);
+}
+
+void Junker::AddJunkInc(int &index, Variable *&p_VariableData)
+{
+	unsigned char countOfAdd = unsigned char((randomEngine.gen() % 25) + 5);
+
+	m_JunkCode.clear();
+	for (unsigned char i = 0; i < countOfAdd; i++)
+	{
+		m_JunkCode.insert(m_JunkCode.begin(),
+						  {{L"\t " + p_VariableData->name + L" ++ ;\n\0"},
+						   {L"\t " + p_VariableData->name + L" -- ;\n\0"}});
+	}
+	InsertJunkToCode(index);
+}
+
+void Junker::AddForLoop(int &index, Variable *&p_VariableData, int type)
+{
+	if (type < 1 || type > 3)
+		return;
+
+	wchar_t randomNumber = (randomEngine.gen() % 10) + 48;
+
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_AllJunkNames);
+	m_AllJunkNames.push_back(uniname);
+
+	std::wstring firstJunkVariable = RandomUnicode(5, 0x0061, 0x007A);
+	std::wstring secondJunkVariable = RandomUnicode(5, 0x0061, 0x007A);
+	while (firstJunkVariable.compare(secondJunkVariable) == 0)
+		secondJunkVariable = RandomUnicode(5, 0x0061, 0x007A);
+
+	switch (type)
+	{
+	case 1:
+		m_JunkCode.clear();
+		m_JunkCode.insert(m_JunkCode.begin(),
+						  {{L" \n\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + randomNumber + L"; " + uniname + L" ++) { \n \0"},
+						   {L"\t " + p_VariableData->name + L" ++; }\n\0"},
+						   {L"\t " + p_VariableData->name + L" -= " + randomNumber + L";\n\0"}});
+
+		break;
+	case 2:
+		m_JunkCode.clear();
+		m_JunkCode.insert(m_JunkCode.begin(),
+						  {{L" \n\t int " + firstJunkVariable + L" = 0; \n"},
+						   {L"\t bool " + secondJunkVariable + L" = true; \n"},
+						   {L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + randomNumber + L"; " + uniname + L" ++) {\n"},
+						   {L"\t " + firstJunkVariable + L" += (int) " + p_VariableData->name + L" ;\n"},
+						   {L"\t if( " + firstJunkVariable + L" ) " + secondJunkVariable + L" = false; \n } \n"}});
+		break;
+	case 3:
+		m_JunkCode.clear();
+		m_JunkCode.insert(m_JunkCode.begin(),
+						  {{L" \n \t int " + firstJunkVariable + L" = 0; \n\0"},
+						   {L"\t int " + secondJunkVariable + L" = 1; \n\0"},
+						   {L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + randomNumber + L"; " + uniname + L" ++) {\n\0"},
+						   {L"\t " + firstJunkVariable + L" *= " + secondJunkVariable + L" ;\n\0"},
+						   {L"\t switch( " + firstJunkVariable + L" )  { \n case 0: " + secondJunkVariable + L" = 0; \n break; \n case 1: " + secondJunkVariable + L" = 1; \n break;\n case 3: " + secondJunkVariable + L" = 3; \n break; \n case 7: " + secondJunkVariable + L" = 7; \n break; \n case 10: " + secondJunkVariable + L" = 10; \n break; \n default: " + secondJunkVariable + L" = 14; \n break; }\n }\n\0"}});
+
+		break;
+	default:
+		return;
+	}
+
+	InsertJunkToCode(index);
+}
+
+void Junker::AddJunkCode(int &index, Variable *&p_VariableData)
+{
+	int techniquesCounter = 0;
+	while (techniquesCounter < m_HowManyJunkTechniques)
+	{
+		// check if there is any option selected
 		bool isAllFalse = true;
 		for (const auto &option : settings::junkerOptions)
 			if (option == true)
@@ -76,270 +261,89 @@ void Junker::FindJunkPlace(int amountOfVariables, int amountOfJunk)
 				break;
 			}
 
-		if (!isAllFalse)
-			for (int i = 0; i < amountOfJunk; i++)
+		if (isAllFalse == true)
+			return;
+
+		int option = 0;
+		for (int i = 0; i < m_HowManyJunkTechniques; i++)
+		{
+
+			// random option from selected
+			option = -1;
+			while (option == -1)
 			{
-				option = -1;
-
-				while (option == -1)
-				{
-					option = randomEngine.gen() % settings::junkerOptions.size();
-					if (settings::junkerOptions[option] == false)
-						option = -1;
-				}
-				switch (option)
-				{
-				case 0:
-					AddJunk(index, variableData, L"+=", contBlockedSpace);
-					break;
-				case 1:
-					AddJunk(index, variableData, L"-=", contBlockedSpace);
-					break;
-				case 2:
-					AddJunk(index, variableData, L"*=", contBlockedSpace);
-					break;
-				case 3:
-					AddForConnected(index, variableData, contBlockedSpace);
-					break;
-				case 4:
-					AddForSemiConnected(index, variableData, contBlockedSpace);
-					break;
-				case 5:
-					AddForUnconnected(index, contBlockedSpace);
-					break;
-				case 6:
-					AddJunkInc(index, variableData, contBlockedSpace);
-					break;
-				default:
-					break;
-				}
+				option = randomEngine.gen() % settings::junkerOptions.size();
+				if (settings::junkerOptions[option] == false)
+					option = -1;
 			}
-		_amountOfVariables++;
-	}
-}
-
-bool Junker::FindIndexToAddJunk(int &index, int diffrence, Variable *&variableData)
-{
-	std::vector<std::wstring> contToCheckIfPointer;
-
-	if (index + diffrence >= p_ContentFile->size() || index + diffrence < 0)
-		return false;
-
-	for (auto &variable : *p_Variables)
-	{
-		if (!p_ContentFile->at(index + diffrence).empty() && p_ContentFile->at(index + diffrence).find(L" " + variable.name + L" ") != std::wstring::npos)
-		{
-
-			int helpindex = -1;
-			Split(p_ContentFile->at(index + diffrence), contToCheckIfPointer, L' ');
-			for (int i = 0; i < contToCheckIfPointer.size(); i++)
+			switch (option)
 			{
-				if (contToCheckIfPointer[i].compare(variable.name) == 0)
-				{
-					helpindex = i;
-					break;
-				}
+			case 0:
+				AddJunk(index, p_VariableData, L"+=");
+				break;
+			case 1:
+				AddJunk(index, p_VariableData, L"-=");
+				break;
+			case 2:
+				AddJunk(index, p_VariableData, L"*=");
+				break;
+			case 3:
+				AddForLoop(index, p_VariableData, 1);
+				break;
+			case 4:
+				AddForLoop(index, p_VariableData, 2);
+				break;
+			case 5:
+				AddForLoop(index, p_VariableData, 3);
+				break;
+			case 6:
+				AddJunkInc(index, p_VariableData);
+				break;
+			default:
+				break;
 			}
-
-			if ((helpindex - 1) >= 0 && (contToCheckIfPointer[helpindex - 1].compare(L"->") == 0 || variable.isPointer > 0 || contToCheckIfPointer[helpindex - 1].compare(L".") == 0) || contToCheckIfPointer[helpindex - 1].compare(L"]") == 0)
-				continue;
-
-			// if ((helpindex + 1) < contToCheckIfPointer.size() && contToCheckIfPointer[helpindex + 1].compare(L"[") == 0) // [0][0]
-			if (variable.isArray > 0 || variable.type.compare(L"bool") == 0)
-				continue;
-
-			if (p_ContentFile->at(index + diffrence).find(L" const ") != std::wstring::npos && p_ContentFile->at(index + diffrence).find(L"const ") != std::wstring::npos)
-				continue;
-
-			// if ((helpindex + 2) < contToCheckIfPointer.size() && contToCheckIfPointer[helpindex + 2].compare(L"new") == 0)
-			//	continue;
-
-			index += diffrence;
-			variableData = &variable;
-			return true;
 		}
+		techniquesCounter++;
 	}
-	return false;
 }
 
-std::vector<indexPair> Junker::FindBlockedIndexForJunk()
+void Junker::InsertJunkToCode(int &index)
 {
-	std::vector<indexPair> contBlockedSpace;
-	int countOfRange = 0;
-	int indexStart = -1;
-	bool isInRange = false;
-	int sumCountOfRange = 0;
-	for (int i = 0; i < p_ContentFile->size(); i++)
-	{
-		if (!p_ContentFile->at(i).empty() && countOfRange == 0 && ((p_ContentFile->at(i).find(L"class") != std::wstring::npos) || (p_ContentFile->at(i).find(L"struct") != std::wstring::npos)))
-		{
-			indexStart = i;
-			isInRange = true;
-		}
+	if (m_JunkCode.size() == 0)
+		return;
 
-		sumCountOfRange = CountOfRangeChars((*p_ContentFile)[i]);
-		countOfRange += sumCountOfRange;
-
-		if (isInRange && sumCountOfRange < 0 && countOfRange == 0)
-		{
-			isInRange = false;
-			contBlockedSpace.push_back(indexPair(indexStart, i));
-			indexStart = -1;
-		}
-	}
-
-	return contBlockedSpace;
-}
-
-void Junker::UpdateBlockedIndexs(int index, int change, std::vector<indexPair> &contBlockedSpace)
-{
-	for (auto &pair : contBlockedSpace)
-		if (index < pair.first)
-		{
-			pair.first += change;
-			pair.second += change;
-		}
-}
-
-void Junker::AddJunk(int &index, Variable *&variable, std::wstring oper, std::vector<indexPair> &contBlockedSpace)
-{
-	// std::wstring randomName = randomUnicode(7, 0x0041, 0x005A);
-	wchar_t random = (randomEngine.gen() % 9) + 49;
-	std::wstring junk = L"\t " + variable->name + L" " + oper + L" " + random + L";\n\0";
-
-	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
-		index++;
-
-	if (oper.compare(L"*=") == 0)
-		oper = L"/=";
-	else if (oper.compare(L"/=") == 0)
-		oper = L"*=";
-	else if (oper.compare(L"+=") == 0)
-		oper = L"-=";
-	else if (oper.compare(L"-=") == 0)
-		oper = L"+=";
-
-	std::wstring junk2 = L"\t " + variable->name + L" " + oper + L" " + random + L";\n\0";
-
-	p_ContentFile->insert(p_ContentFile->begin() + index + 1, junk);
-	p_ContentFile->insert(p_ContentFile->begin() + index + 2, junk2);
-
-	UpdateBlockedIndexs(index, 2, contBlockedSpace);
-	index += 1; //+
-}
-
-void Junker::AddJunkInc(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
-{
-	std::wstring junk1 = L"\t " + variable->name + L" ++ ;\n\0";
-	std::wstring junk2 = L"\t " + variable->name + L" -- ;\n\0";
-	int countOfAdd = (randomEngine.gen() % 20) + 1;
-
-	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
-		index++;
-
-	for (int i = 0; i < countOfAdd; i++)
-	{
-		p_ContentFile->insert(p_ContentFile->begin() + index + 1, junk1);
-		p_ContentFile->insert(p_ContentFile->begin() + index + 2, junk2);
-		index += 1;
-	}
-	UpdateBlockedIndexs(index, countOfAdd, contBlockedSpace);
-	index += countOfAdd;
-}
-
-void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
-{
-
-	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
-	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
-	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
-	}
-	m_allJunkNames.push_back(uniname);
-
-	std::vector<std::wstring> junkCode;
-	junkCode.push_back(L" \n\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) { \n \0");
-	junkCode.push_back(L"\t " + variable->name + L" ++; }\n\0");
-	junkCode.push_back(L"\t " + variable->name + L" -= " + random + L";\n\0");
-
-	InsertJunkToCode(junkCode, index, contBlockedSpace);
-}
-
-void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<indexPair> &contBlockedSpace)
-{
-
-	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
-	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
-	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
-	}
-	m_allJunkNames.push_back(uniname);
-	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::vector<std::wstring> junkCode;
-	junkCode.push_back(L" \n\t int " + addvariable1 + L" = 0; \n");
-	junkCode.push_back(L"\t bool " + addvariable2 + L" = true; \n");
-	junkCode.push_back(L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n");
-	junkCode.push_back(L"\t " + addvariable1 + L" += (int) " + variable->name + L" ;\n");
-	junkCode.push_back(L"\t if( " + addvariable1 + L" ) " + addvariable2 + L" = false; \n } \n");
-
-	InsertJunkToCode(junkCode, index, contBlockedSpace);
-}
-
-void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSpace)
-{
-	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
-	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
-	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
-	}
-	m_allJunkNames.push_back(uniname);
-
-	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
-
-	// change later junk to better word
-	// also find better way to paste templates (e.g ''' ''' like python or load from file)
-	std::vector<std::wstring> junkCode;
-	junkCode.push_back(L" \n \t int " + addvariable1 + L" = 0; \n\0");
-	junkCode.push_back(L"\t int " + addvariable2 + L" = 1; \n\0");
-	junkCode.push_back(L"\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) {\n\0");
-	junkCode.push_back(L"\t " + addvariable1 + L" *= " + addvariable2 + L" ;\n\0");
-	junkCode.push_back(L"\t switch( " + addvariable1 + L" )  { \n case 0: " + addvariable2 + L" = 0; \n break; \n case 1: " + addvariable2 + L" = 1; \n break;\n case 3: " + addvariable2 + L" = 3; \n break; \n case 7: " + addvariable2 + L" = 7; \n break; \n case 10: " + addvariable2 + L" = 10; \n break; \n default: " + addvariable2 + L" = 14; \n break; }\n }\n\0");
-
-	InsertJunkToCode(junkCode, index, contBlockedSpace);
-}
-
-void Junker::InsertJunkToCode(std::vector<std::wstring> &junkCode, int &index, std::vector<indexPair> &contBlockedSpace)
-{
-	if (index + 1 < p_ContentFile->size() && p_ContentFile->at(index + 1).find(L"{") != std::wstring::npos)
-		index++;
-
-	for (auto i = 0; i < junkCode.size(); i++)
-		p_ContentFile->insert(p_ContentFile->begin() + index + i + 1, junkCode[i]);
-	UpdateBlockedIndexs(index, (int)junkCode.size(), contBlockedSpace);
-	index += (int)junkCode.size();
+	for (auto i = 0; i < m_JunkCode.size(); i++)
+		p_ContentFile->insert(p_ContentFile->begin() + index + i + 1, m_JunkCode[i]);
+	UpdateBlockedIndexes(index, int(m_JunkCode.size()));
+	index += (int)m_JunkCode.size();
 }
 
 bool Junker::Update(std::vector<int> &settings)
 {
-	if(settings.size() == 1)
-		p_Parser->FindVariables();
-	else if (settings.size() == 2)
+	if (settings.size() == 2)
 	{
-		amountOfVariables = settings[0];
-		amountOfJunk = settings[1];
+		m_HowManyVariables = settings[0];
+		m_HowManyJunkTechniques = settings[1];
 		return true;
 	}
-
 	return false;
 }
 
 bool Junker::DoTechnique()
 {
-	FindJunkPlace(amountOfVariables, amountOfJunk);
+	int variableCounter = 0;
+	int index = 0;
+	m_ImmutableLocations.clear();
+	Variable *p_VariableData = nullptr;
+	while (variableCounter < m_HowManyVariables)
+	{
+		p_VariableData = nullptr;
+		index = FindJunkPlace(p_VariableData);
+		if (index == -1 || p_VariableData == nullptr)
+			return false;
+		AddJunkCode(index, p_VariableData);
+		variableCounter++;
+	}
+
 	return true;
 }

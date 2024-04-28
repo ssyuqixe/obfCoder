@@ -21,13 +21,6 @@ public:
             p_Variables = p_Parser->GetVariables();
     }
 
-    // temporary solution
-    bool SetVariables(std::vector<Variable> *variables)
-    {
-        p_Variables = variables;
-        return true;
-    }
-
     bool Update(std::vector<int> &settings) override;
     bool DoTechnique() override;
     std::string GetTag() override { return tag; };

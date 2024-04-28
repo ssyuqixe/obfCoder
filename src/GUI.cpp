@@ -74,7 +74,7 @@ void GUI::on_saveButton_clicked()
 
 void GUI::on_addButton_clicked()
 {
-
+	ui.textBrowser->clear();
 	if (settings::inFileName == "notSelected" || settings::outFileName == "notSelected")
 	{
 		ui.textBrowser->append("Error! Wrong path selected!");
@@ -92,8 +92,9 @@ void GUI::on_addButton_clicked()
 	manager.StateComponent("Parser", bool(settings::countOfSettings > 0));
 	auto junker = manager.GetComponent("Junker");
 	if (junker)
-		junker->Update(std::vector<int>({1}));
-
+	{
+		junker->Update(std::vector<int>({ui.sp_AmountVariables->value(), ui.sp_AmountCodes->value()}));
+	}
 	clock_t time;
 	clock_t sumTime = 0;
 	auto components = manager.GetComponents();

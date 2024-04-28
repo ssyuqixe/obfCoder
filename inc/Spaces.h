@@ -11,15 +11,15 @@ class Spaces : public Component
 {
     std::vector<std::wstring> *p_ContentFile;
     Parser *p_Parser = nullptr;
-    std::string m_tag = "Spaces";
+    std::string m_Tag = "Spaces";
 
 public:
     Spaces(std::vector<std::wstring> *mainString, Parser* p_Parser) : p_ContentFile(mainString), p_Parser(p_Parser) {}
 
     bool Update(std::vector<int> &settings) override;
     bool DoTechnique() override;
-    std::string GetTag() override { return m_tag; };
-    void SetTag(std::string tag) override { m_tag = tag;};
+    std::string GetTag() override { return m_Tag; };
+    void SetTag(std::string tag) override { m_Tag = tag;};
 };
 
 
