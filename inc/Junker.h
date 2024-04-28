@@ -15,9 +15,9 @@ private:
 	std::vector<std::wstring> *p_ContentFile = nullptr;
 	std::vector<Variable> *p_Variables = nullptr;
 	Parser *p_Parser = nullptr;
-	std::string tag = "Junker";
+	std::string m_tag = "Junker";
 	// todo: rename variables
-	std::vector<std::wstring> allJunkNames;
+	std::vector<std::wstring> m_allJunkNames;
 	int amountOfVariables;
 	int amountOfJunk;
 
@@ -36,9 +36,9 @@ public:
 	{
 		if (p_Parser != nullptr)
 			p_Variables = p_Parser->GetVariables();
-		allJunkNames.push_back(L"do");
-		allJunkNames.push_back(L"or");
-		allJunkNames.push_back(L"if");
+		m_allJunkNames.push_back(L"do");
+		m_allJunkNames.push_back(L"or");
+		m_allJunkNames.push_back(L"if");
 	}
 
 	void FindJunkPlace(int amountOfVariables, int amountOfJunk);
@@ -51,8 +51,8 @@ public:
 
 	bool Update(std::vector<int> &settings) override;
 	bool DoTechnique() override;
-	std::string GetTag() override { return tag; };
-	void SetTag(std::string tag) override { this->tag = tag; };
+	std::string GetTag() override { return m_tag; };
+	void SetTag(std::string tag) override { this->m_tag = tag; };
 };
 
 #endif // JUNKER_H

@@ -9,7 +9,7 @@
 
 static std::mt19937_64 random;
 
-bool Parser::IsContinue(std::vector<indexPair> indexPosition, bool isContinue)
+bool Parser::IsContinue(const std::vector<indexPair>& indexPosition, bool isContinue)
 {
 	if (!indexPosition.empty())
 		isContinue = (indexPosition.back().second >= INT32_MAX) ? true : false;
@@ -284,48 +284,6 @@ void Parser::FindVariables()
 	}
 }
 
-std::vector<indexPair> Parser::FindCharIndex(std::wstring &line, std::wstring _char, bool isContinue)
-{
-	std::vector<size_t> allIndexs;
-
-	size_t startIndex;
-
-	if (!line.empty() && line.find(_char) != std::wstring::npos)
-	{
-		startIndex = line.find(_char);
-		if (startIndex - 1 >= 0 && line[startIndex - 1] != L'\\') //
-			allIndexs.push_back(startIndex);
-
-		while (line.find(_char, startIndex + 1) != std::wstring::npos && startIndex - 1 >= 0 && line[startIndex - 1] != L'\\')
-		{
-			startIndex = line.find(_char, startIndex + 1);
-			allIndexs.push_back(startIndex);
-		}
-	}
-
-	std::vector<indexPair> indexVector;
-
-	if (!allIndexs.empty())
-		if (isContinue)
-		{
-			indexVector.push_back(indexPair(0, allIndexs[0]));
-			for (size_t i = 1; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (!(allIndexs.size() % 2))
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-		else
-		{
-			for (size_t i = 0; i < allIndexs.size() - 1; i += 2)
-				indexVector.push_back(indexPair(allIndexs[i], allIndexs[i + 1]));
-
-			if (allIndexs.size() % 2)
-				indexVector.push_back(indexPair(allIndexs.back(), INT32_MAX));
-		}
-
-	return indexVector;
-}
 
 std::vector<indexPair> Parser::FindBlockIndex()
 {
@@ -360,6 +318,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 {
 	// std::wstring newName = randomUnicode(10, 0x0041, 0x005A); //A-Z
 	std::wstring newName = RandomUnicode(1, 0x4E00, 0x62FF); // chinese 0x62FF
+	// std::wstring newName = RandomUnicode(1, 0x1F600, 0x1F64F); // emoji 0x1F600, 0x1F64F
 	int i = 1;
 	bool change = true;
 	while (change)
@@ -371,6 +330,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 			if (element.newName == newName)
 			{
 				newName = RandomUnicode(++i, 0x4E00, 0x62FF);
+				// newName = RandomUnicode(++i, 0x1F600, 0x1F64F);
 				change = true;
 				break;
 			}
@@ -445,16 +405,6 @@ void Parser::DeleteDoubleSpaces(std::wstring &line)
 		line.replace(line.find(L"  "), 2, L" ");
 }
 
-void Parser::DeleteEnters()
-{
-	throw new std::exception("Not implemented");
-}
-
-void Parser::DeleteUnnecessarySpaces()
-{
-	throw new std::exception("Not implemented");
-}
-
 void Parser::AddExpectionsWords()
 {
 	// mapVariables.insert(Pair(L" operator ", L"operator"));
@@ -469,12 +419,6 @@ void Parser::AddExpectionsWords()
 	// variables.insert(variables.begin(), Variable(word, newName, typeOfVariable));
 }
 
-
-//todo: delete later
-void Parser::ChangeLoops()
-{
- throw new std::exception("Not implemented");
-}
 
 bool Parser::Update(std::vector<int> &settings)
 {

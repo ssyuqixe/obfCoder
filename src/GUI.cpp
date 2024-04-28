@@ -225,10 +225,8 @@ void GUI::on_chgVarBox_changed()
 		auto renamer = manager.GetComponent("Renamer");
 		if (renamer)
 		{
-			std::cout << "1";
 			if (renamer->Update(std::vector<int>()))
 				manager.StateComponent("Renamer", true);
-			std::cout << "3";
 		}
 	}
 	else

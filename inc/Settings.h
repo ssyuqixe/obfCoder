@@ -9,6 +9,8 @@ namespace settings {
 	extern std::string outPath;
 	extern int countOfSettings;
 	extern std::vector<bool> junkerOptions;
+	extern std::vector<std::wstring> special_operators;
+	extern std::vector<std::wstring> operators;
 }
 
 #endif // !SETTINGS_H

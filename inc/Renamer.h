@@ -11,11 +11,8 @@ class Renamer : public Component
 {
     std::vector<std::wstring> *p_ContentFile = nullptr;
     std::vector<Variable> *p_Variables = nullptr;
-	Parser *p_Parser = nullptr;
+    Parser *p_Parser = nullptr;
     std::string tag = "Renamer";
-
-    // todo: delete it later
-    bool IsContinue(std::vector<indexPair> indexPosition, bool isContinue);
 
 public:
     Renamer(std::vector<std::wstring> *p_ContentFile, Parser *p_Parser) : p_ContentFile(p_ContentFile), p_Parser(p_Parser)

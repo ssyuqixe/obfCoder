@@ -4,5 +4,8 @@ namespace settings {
 	QString outFileName = "notSelected";
 	std::string outPath = "notSelected";
 	int countOfSettings = 0;
-	std::vector<bool> junkerOptions(7, true);
+	std::vector<bool> junkerOptions(7, true);	
+	std::vector<std::wstring> special_operators{ L"+=", L"-=", L"*=", L"/=", L"<=",L">=",L"++", L"--", L"!=", L"//", L"<<", L">>", L"**", L"->", L"||" };
+	std::vector<std::wstring> operators{ L"=",L"+", L"-", L"/", L"*", L"%", L"&", L"<", L">", L"^", L"!", L"?", L",", L"." }; 
+
 }

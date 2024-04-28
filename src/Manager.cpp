@@ -88,14 +88,14 @@ void Manager::DefaultSetup(std::vector<std::wstring>* p_ContentFile)
 
     //todo: check if change order Comments with Parser
     AddComponent(new Comments(p_ContentFile));
-    Parser* parser = new Parser(p_ContentFile);
-    AddComponent(parser);
+    Parser* p_Parser = new Parser(p_ContentFile);
+    AddComponent(p_Parser);
     AddComponent(new Looper(p_ContentFile));
-    AddComponent(new Junker(p_ContentFile, parser));
-    AddComponent(new Renamer(p_ContentFile, parser));
+    AddComponent(new Junker(p_ContentFile, p_Parser));
+    AddComponent(new Renamer(p_ContentFile, p_Parser));
     AddComponent(new Encryption(p_ContentFile));
-    AddComponent(new Enters(p_ContentFile));
-    AddComponent(new Spaces(p_ContentFile));
+    AddComponent(new Enters(p_ContentFile, p_Parser));
+    AddComponent(new Spaces(p_ContentFile, p_Parser));
 
 }
 

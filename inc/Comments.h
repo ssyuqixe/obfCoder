@@ -10,7 +10,7 @@
 class Comments : public Component
 {
     std::vector<std::wstring> *p_ContentFile;
-    std::string tag = "Comments";
+    std::string m_tag = "Comments";
 public:
     Comments(std::vector<std::wstring> *mainString) : p_ContentFile(mainString) {}
 
@@ -20,8 +20,8 @@ public:
 
 	bool Update(std::vector<int> &settings) override;
 	bool DoTechnique() override;
-    std::string GetTag() override { return tag; };
-    void SetTag(std::string tag) override { this->tag = tag;};
+    std::string GetTag() override { return m_tag; };
+    void SetTag(std::string tag) override { this->m_tag = tag;};
 };
 
 #endif // COMMENTS_H

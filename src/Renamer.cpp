@@ -32,7 +32,7 @@ bool Renamer::DoTechnique()
 		indexPositions.erase(indexPositions.begin(), indexPositions.end());
 		indexPositions = FindCharIndex(line, L"\"", isContinue);
 
-		isContinue = IsContinue(indexPositions, isContinue);
+		isContinue = p_Parser->IsContinue(indexPositions, isContinue);
 
 		while (line.find(L" false ") != std::string::npos)
 		{
@@ -89,12 +89,4 @@ bool Renamer::DoTechnique()
 		}
 	}
     return true;
-}
-
-
-bool Renamer::IsContinue(std::vector<indexPair> indexPosition, bool isContinue)
-{
-	if (!indexPosition.empty())
-		isContinue = (indexPosition.back().second >= INT32_MAX) ? true : false;
-	return isContinue;
 }

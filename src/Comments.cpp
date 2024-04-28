@@ -8,6 +8,18 @@ bool Comments::Update(std::vector<int> &settings)
 
 bool Comments::DoTechnique()
 {	
+	//DeleteBlockComments();
+	//DeleteLineComments();
+	return DeleteBlockComments();
+}
+
+bool Comments::DeleteLineComments()
+{
+    throw std::runtime_error("Not implemented");
+}
+
+bool Comments::DeleteBlockComments()
+{
     //temporary both cases in one function
     bool commentLong = false;
 	for (auto &line : *p_ContentFile)
@@ -46,15 +58,5 @@ bool Comments::DoTechnique()
 		if (!commentLong && !line.empty() && line.find(L"//") != std::string::npos && line.find(L"\"//\"") == std::string::npos)
 			line.erase(line.find(L"//"), line.length() - line.find(L"//") - 1);
 	}
-    return true;
-}
-
-bool Comments::DeleteLineComments()
-{
-    return true;
-}
-
-bool Comments::DeleteBlockComments()
-{
     return true;
 }

@@ -251,12 +251,12 @@ void Junker::AddForConnected(int &index, Variable *&variable, std::vector<indexP
 {
 
 	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
-	allJunkNames.push_back(uniname);
+	m_allJunkNames.push_back(uniname);
 
 	std::vector<std::wstring> junkCode;
 	junkCode.push_back(L" \n\t int " + uniname + L" ; \n\t for( " + uniname + L" = 0; " + uniname + L" < " + random + L"; " + uniname + L" ++) { \n \0");
@@ -270,12 +270,12 @@ void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<in
 {
 
 	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
-	allJunkNames.push_back(uniname);
+	m_allJunkNames.push_back(uniname);
 	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::vector<std::wstring> junkCode;
@@ -291,12 +291,12 @@ void Junker::AddForSemiConnected(int &index, Variable *&variable, std::vector<in
 void Junker::AddForUnconnected(int &index, std::vector<indexPair> &contBlockedSpace)
 {
 	wchar_t random = (randomEngine.gen() % 10) + 48;
-	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames);
+	std::wstring uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames);
 	while (uniname.compare(L"or") == 0 || uniname.compare(L"do") == 0)
 	{
-		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
+		uniname = RandomUnicodeUntilNewValue(5, 0x0061, 0x007A, m_allJunkNames); // RandomUnicode(2, 0x4E00, 0x62FF);
 	}
-	allJunkNames.push_back(uniname);
+	m_allJunkNames.push_back(uniname);
 
 	std::wstring addvariable1 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);
 	std::wstring addvariable2 = RandomUnicode(5, 0x0061, 0x007A); // RandomUnicode(2, 0x4E00, 0x62FF);

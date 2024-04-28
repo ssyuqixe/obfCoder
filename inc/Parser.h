@@ -27,10 +27,8 @@ private:
 	std::wstring endBlock = L"#define obf_block_end";
 
 	std::vector<Variable> variables;
-	bool IsContinue(std::vector<indexPair> indexPosition, bool isContinue);
 
 
-	std::vector<indexPair> FindCharIndex(std::wstring& line, std::wstring _char, bool isContinue);
 	std::vector<indexPair> FindBlockIndex();
 
 	void NewNameVariables(std::vector<Variable>& variables, std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter);
@@ -48,13 +46,10 @@ public:
 	void ChangeVariables();
 	void OperatorException(std::wstring& line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair>& indexPositions);
 
+	bool IsContinue(const std::vector<indexPair>& indexPosition, bool isContinue);
 
 	void DeleteDoubleSpaces(std::wstring& line);
-	void DeleteEnters(); 
-	void DeleteUnnecessarySpaces();
-
 	
-	void ChangeLoops();
 
 	//temporary solution
 	std::vector<Variable>* GetVariables() { return &variables; }
