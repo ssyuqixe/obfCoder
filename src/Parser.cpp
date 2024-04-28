@@ -381,80 +381,7 @@ void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring wor
 
 void Parser::ChangeVariables()
 {
-	size_t index;
-	int diff;
-	bool isNotInRange;
-	bool isContinue = false;
-	size_t indexOfPair;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : *this->mainString)
-	{
-		if (line.empty() == true)
-			continue;
-
-		index = 0;
-		diff = 0;
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		while (line.find(L" false ") != std::string::npos)
-		{
-			index = line.find(L" false ", 0);
-			line.replace(index, 7, L" 0 ");
-		}
-		while (line.find(L" true ") != std::string::npos)
-		{
-			index = line.find(L" true ", 0);
-			line.replace(index, 6, L" 1 ");
-		}
-
-		for (auto const &variable : this->variables)
-		{
-			if (line.find(L" " + variable.name + L" ") != std::string::npos)
-			{
-				index = line.find(L" " + variable.name + L" ");
-				indexOfPair = 0;
-				while (line.find(L" " + variable.name + L" ", index) != std::string::npos)
-				{
-					isNotInRange = true;
-					if (!indexPositions.empty())
-						for (size_t i = 0; i < indexPositions.size(); i++)
-						{
-							if (indexPositions[i].first < index && index < indexPositions[i].second)
-							{
-								isNotInRange = false;
-								indexOfPair = i;
-								break;
-							}
-						}
-
-					if (isNotInRange)
-					{
-						diff = (int)(variable.newName.length() - variable.name.length()); // counting the length of diffrence new name - old name
-						line.replace(index, variable.name.length() + 2, L" " + variable.newName + L" ");
-						index = line.find(L" " + variable.name + L" ", index + variable.name.length() + diff);
-
-						if (!indexPositions.empty())
-						{
-							// indexPositions[indexOfPair].second += diff;
-
-							for (size_t i = indexOfPair + 1; i < indexPositions.size(); i++)
-							{
-								indexPositions[i].first += diff;
-								indexPositions[i].second += diff;
-							}
-						}
-					}
-					else
-						index = line.find(L" " + variable.name + L" ", index + variable.name.length());
-				}
-			}
-		}
-	}
+	throw new std::exception("Not implemented");
 }
 
 void Parser::OperatorException(std::wstring &line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair> &indexPositions)
@@ -519,70 +446,12 @@ void Parser::DeleteDoubleSpaces(std::wstring &line)
 
 void Parser::DeleteEnters()
 {
-	bool isContinue = false;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : *this->mainString)
-	{
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		if (!line.empty() && !CheckInclude(line) && line.find(L"#define") == std::string::npos)
-		{
-			OperatorException(line, L"\n", L"", 1, -1, indexPositions);
-		}
-
-		// else if (!line.empty())
-		//	line = L"\n" + line;
-	}
+	throw new std::exception("Not implemented");
 }
 
 void Parser::DeleteUnnecessarySpaces()
 {
-
-	bool isContinue = false;
-	std::vector<indexPair> indexPositions;
-
-	for (auto &line : *this->mainString)
-	{
-
-		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-		indexPositions = FindCharIndex(line, L"\"", isContinue);
-		isContinue = IsContinue(indexPositions, isContinue);
-
-		// OperatorException(line, L" ' ", L"'", 2, -2, indexPositions);
-		OperatorException(line, L" ; ", L";", 2, -2, indexPositions);
-		OperatorException(line, L" , ", L",", 3, -2, indexPositions);
-		OperatorException(line, L" ( ", L"(", 2, -2, indexPositions);
-		OperatorException(line, L" [ ", L"[", 2, -2, indexPositions);
-		OperatorException(line, L" { ", L"{", 2, -2, indexPositions);
-		OperatorException(line, L" ) ", L")", 2, -2, indexPositions);
-		OperatorException(line, L" ] ", L"]", 2, -2, indexPositions);
-		OperatorException(line, L" } ", L"}", 2, -2, indexPositions);
-
-		OperatorException(line, L"( ", L"(", 2, -1, indexPositions);
-		OperatorException(line, L"[ ", L"[", 2, -1, indexPositions);
-		OperatorException(line, L"{ ", L"{", 2, -1, indexPositions);
-		OperatorException(line, L" )", L")", 2, -1, indexPositions);
-		OperatorException(line, L" ]", L"]", 2, -1, indexPositions);
-		OperatorException(line, L" }", L"}", 2, -1, indexPositions);
-		// OperatorException(line, L"' ", L"'", 2, -1, indexPositions);
-		// OperatorException(line, L" '", L"'", 2, -1, indexPositions);
-
-		for (auto &o : special_operators)
-			OperatorException(line, L" " + o + L" ", o, 4, -2, indexPositions);
-
-		for (auto &o : operators)
-			OperatorException(line, L" " + o + L" ", o, 3, -2, indexPositions);
-
-		OperatorException(line, L"\t", L"", 1, -1, indexPositions);
-		// OperatorException(line, L", ", L",", 2, -1, indexPositions);
-		OperatorException(line, L" ,", L",", 2, -1, indexPositions);
-		OperatorException(line, L"; ", L";", 2, -1, indexPositions);
-		OperatorException(line, L" ;", L";", 2, -1, indexPositions);
-	}
+	throw new std::exception("Not implemented");
 }
 
 void Parser::AddExpectionsWords()

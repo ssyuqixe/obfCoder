@@ -54,6 +54,8 @@ public:
 	
 	void ChangeLoops();
 
+	//temporary solution
+	std::vector<Variable>* GetVariables() { return &variables; }
 
 	void AddJunks(int amountOfVariables, int amountOfJunk);
 

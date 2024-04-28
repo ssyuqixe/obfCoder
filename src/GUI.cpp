@@ -1,7 +1,12 @@
 #include "GUI.h"
 #include "Parser.h"
 #include "Settings.h"
+//replace it later by manager
 #include "Comments.h"
+#include "Renamer.h"
+#include "Looper.h"
+#include "Enters.h"
+#include "Spaces.h"
 #include "FileHandling.h"
 #include <QFileDialog>
 #include <QProcess>
@@ -99,7 +104,8 @@ void GUI::on_addButton_clicked()
 	if (ui.cb_changeLoops->isChecked())
 	{
 		time = clock();
-		newParser->ChangeLoops();
+		Looper looper(file.GetContent());
+		looper.DoTechnique();
 		time = clock() - time;
 		ui.textBrowser->append("Changed loops - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 		sumtime += time;
@@ -123,9 +129,10 @@ void GUI::on_addButton_clicked()
 	if (ui.cb_ChangeVariables->isChecked())
 	{
 		time = clock();
+		Renamer renamer(file.GetContent());
 		newParser->FindVariables();
-		newParser->ChangeVariables();
-		newParser->SpaceOperatorsFix();
+		renamer.SetVariables(newParser->GetVariables());
+		renamer.DoTechnique();
 		time = clock() - time;
 		ui.textBrowser->append("Renamed variables - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 		sumtime += time;
@@ -143,7 +150,8 @@ void GUI::on_addButton_clicked()
 	if (ui.cb_DeleteEnters->isChecked())
 	{
 		time = clock();
-		newParser->DeleteEnters();
+		Enters enters(file.GetContent());
+		enters.DoTechnique();
 		time = clock() - time;
 		ui.textBrowser->append("Deleted transition to the new line - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 		sumtime += time;
@@ -152,7 +160,8 @@ void GUI::on_addButton_clicked()
 	if (ui.cb_DeleteSpace->isChecked())
 	{
 		time = clock();
-		newParser->DeleteUnnecessarySpaces();
+		Spaces spaces(file.GetContent());
+		spaces.DoTechnique();
 		time = clock() - time;
 		ui.textBrowser->append("Deleted spaces - Time: " + QString::number((double)time / CLOCKS_PER_SEC, 'f', 4) + "s.");
 		sumtime += time;
