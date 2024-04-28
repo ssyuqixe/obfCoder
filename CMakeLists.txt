@@ -64,7 +64,7 @@ set(OBF_SOURCES
     )
 
 add_executable(${PROJECT_NAME}
-    #WIN32 # remove console 
+    WIN32 # remove console 
     ${OBF_SOURCES}
     ${OBF_HEADERS}
 )
