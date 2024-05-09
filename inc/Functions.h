@@ -13,9 +13,10 @@ typedef std::pair<size_t, size_t> indexPair;
 const int specialVariables = 2;	
 
 struct RandomEngine{
-	std::random_device rd;
+	// std::random_device rd;
 	std::mt19937 gen;
-	RandomEngine() : gen(rd()) {}
+	RandomEngine() : gen(unsigned int(time(nullptr))) {}
+	unsigned int operator()() { return gen(); }
 };
 static RandomEngine randomEngine;
 

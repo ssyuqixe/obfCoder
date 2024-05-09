@@ -8,8 +8,6 @@
 #include "FileHandling.h"
 #include "Settings.h"
 
-static std::mt19937_64 random;
-
 bool Parser::IsContinue(const std::vector<indexPair> &indexPosition, bool isContinue)
 {
 	if (!indexPosition.empty())
@@ -31,7 +29,7 @@ Parser::Parser(FileHandling &file, std::string name)
 
 void Parser::SpaceOperators()
 {
-	std::vector<std::wstring> sufix{L"=", L"+", L"-", L"*", L"/", L"<", L">", L"&", L"|", L"^", L"!"};
+	std::vector<std::wstring> suffixes{L"=", L"+", L"-", L"*", L"/", L"<", L">", L"&", L"|", L"^", L"!"};
 	std::vector<int> positions;
 	std::vector<indexPair> indexPositions;
 	std::vector<indexPair> indexPositionsBlock;
@@ -46,7 +44,7 @@ void Parser::SpaceOperators()
 
 	for (auto &line : *p_ContentFile)
 	{
-		if (line.empty() || CheckInclude(line))
+		if (CheckInclude(line))
 			continue;
 
 		indexPositions.erase(indexPositions.begin(), indexPositions.end());
@@ -63,70 +61,66 @@ void Parser::SpaceOperators()
 
 		for (const auto &op : settings::operators)
 		{
-			isChange = true;
-
-			if (line.find(op) != std::string::npos)
+			
+			index = line.find(op);
+			if (index == std::string::npos)
+				continue;
+			
+			while (line.find(op, index) != std::string::npos)
 			{
-				index = line.find(op);
+				isChange = true;
+				isNotInRange = true;
+				indexOfPair = 0;
 
-				while (line.find(op, index) != std::string::npos)
+				for (size_t i = 0; i < indexPositions.size(); i++)
 				{
-					isChange = true;
-					isNotInRange = true;
-					indexOfPair = 0;
-
-					for (size_t i = 0; i < indexPositions.size(); i++)
+					if (indexPositions[i].first < index && index < indexPositions[i].second)
 					{
-						if (indexPositions[i].first < index && index < indexPositions[i].second)
-						{
-							isNotInRange = false;
-							indexOfPair = i;
-							break;
-						}
-					}
-
-					if (isNotInRange == true)
-					{
-						for (auto &c : sufix) // Check if there is a double operator
-							if ((index - 1 >= 0 && index + 1 < line.length()) && (line[index + 1] == c[0] || line[index - 1] == c[0]))
-								isChange = false;
-						if (op.compare(L".") == 0)
-						{ // Check if number is float
-							if (index - 1 >= 0)
-							{
-								std::vector<std::wstring> container;
-								Split(line.substr(0, line.find(op, index) + 1), container, L' ');
-								if (container.empty() == false && isdigit(container.back()[0]))
-								{
-									isChange = false;
-								}
-							}
-						}
-
-						if (isChange)
-						{
-							line.replace(index, 1, L" " + op + L" ");
-							index = line.find(op, index + 2);
-
-							if (!indexPositions.empty())
-							{
-
-								for (size_t i = indexOfPair + 1; i < indexPositions.size(); i++)
-								{
-									indexPositions[i].first += 2;
-									indexPositions[i].second += 2;
-								}
-							}
-						}
-						else
-							index = line.find(op, index + 1);
-					}
-					else if (index + 1 < line.length())
-						index = line.find(op, index + 1);
-					else
+						isNotInRange = false;
+						indexOfPair = i;
 						break;
+					}
 				}
-			}
+
+				if (isNotInRange == true)
+				{
+					for (const auto &sufix : suffixes) // Check if there is a double operator
+						if ((index - 1 >= 0 && index + 1 < line.length()) && (line[index + 1] == sufix[0] || line[index - 1] == sufix[0]))
+							isChange = false;
+
+					if (isChange == true && op.compare(L".") == 0)
+					{ // Check if number is float
+						if (index - 1 >= 0)
+						{
+							std::vector<std::wstring> container;
+							Split(line.substr(0, line.find(op, index) + 1), container, L' ');
+							if (container.empty() == false && isdigit(container.back()[0]))
+								isChange = false;
+						}
+					}
+
+					if (isChange)
+					{
+						line.replace(index, 1, L" " + op + L" ");
+						index = line.find(op, index + 2);
+
+						if (!indexPositions.empty())
+						{
+							for (size_t i = indexOfPair + 1; i < indexPositions.size(); i++)
+							{
+								indexPositions[i].first += 2;
+								indexPositions[i].second += 2;
+							}
+						}
+					}
+					else
+						index = line.find(op, index + 1);
+				}
+				else if (index + 1 < line.length())
+					index = line.find(op, index + 1);
+				else
+					break;
+				}
 		}
 
 		DeleteDoubleSpaces(line);
@@ -149,9 +143,7 @@ void Parser::SpaceOperatorsFix()
 			continue;
 
 		indexPositions.erase(indexPositions.begin(), indexPositions.end());
-
 		indexPositions = FindCharIndex(line, L"\"", isContinue);
-
 		isContinue = IsContinue(indexPositions, isContinue);
 
 		for (const auto &op : operatorExceptions)
@@ -169,7 +161,7 @@ void Parser::FindVariables()
 
 	bool saveNextWord = false;
 	bool checkNextWord = false;
-	bool change = false;
+	bool addVariable = false;
 	std::wstring typeOfVariable;
 	int pointerCounter = 0;
 	int arrayDimCounter = 0;
@@ -222,10 +214,10 @@ void Parser::FindVariables()
 			if (saveNextWord == true && checkNextWord == false)
 			{
 				saveNextWord = false;
-				change = true;
+				addVariable = true;
 				if ((splitedLine[i] == L">" || splitedLine[i] == L">>" || splitedLine[i] == L";" || splitedLine[i] == L"," || splitedLine[i] == L"const") && (i - 2 >= 0 && splitedLine[i - 2] == L"const"))
 				{
-					change = false;
+					addVariable = false;
 					continue;
 				}
 
@@ -233,13 +225,13 @@ void Parser::FindVariables()
 				{
 					if (variable.newName.compare(splitedLine[i]) == 0)
 					{
-						change = false;
+						addVariable = false;
 						pointerCounter = 0;
 						break;
 					}
 				}
 
-				if (change == true)
+				if (addVariable == true)
 				{
 					arrayDimCounter = 0;
 					/*
@@ -276,7 +268,7 @@ std::vector<indexPair> Parser::FindBlockIndex()
 {
 	std::vector<indexPair> indexVector;
 	bool isBlockStarted = false;
-	size_t startIndex;
+	size_t startIndex = 0;
 
 	int i = 0;
 	for (const auto &line : *p_ContentFile)
@@ -321,10 +313,10 @@ void Parser::NewNameVariables(std::wstring word, std::wstring typeOfVariable, in
 
 void Parser::OperatorException(std::wstring &line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair> &indexPositions)
 {
-	size_t index;
+	size_t index = 0;
 	int indexOfPair = 0;
-	bool isNotInRange;
-	bool isHasToChangeIndex;
+	bool isNotInRange = true;
+	bool isHasToChangeIndex = false;
 	if (!line.empty() && line.find(findOperator) != std::wstring::npos)
 	{
 		index = line.find(findOperator);
@@ -345,6 +337,8 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 					if (index < indexPositions[i].first)
 					{
 						isHasToChangeIndex = true;
+						indexOfPair = i;
+						break;
 					}
 				}
 
@@ -352,17 +346,16 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 			{
 				line.replace(index, replace, changeOperator);
 
+
+				//check later if this change works
 				if (!indexPositions.empty() && isHasToChangeIndex == true)
 				{
-					if (index < indexPositions[0].first)
-						indexOfPair = -1;
-					for (int i = indexOfPair + 1; i < indexPositions.size(); i++)
+					for (int i = indexOfPair; i < indexPositions.size(); i++)
 					{
 						indexPositions[i].first += find;
 						indexPositions[i].second += find;
 					}
-					if (indexOfPair == -1)
-						indexOfPair = 0;
+					
 				}
 
 				index = line.find(findOperator, index + find + 1);
