@@ -17,21 +17,18 @@ typedef std::multimap<std::wstring, std::wstring> MapCode;
 class Parser : public Component
 {
 private:
-	std::vector<std::wstring>* mainString;
-	std::vector<std::wstring> splitedLine;
-    std::string tag = "Parser";
-	std::vector<std::wstring> special_operators{ L"+=", L"-=", L"*=", L"/=", L"<=",L">=",L"++", L"--", L"!=", L"//", L"<<", L">>", L"**", L"->", L"||" };
-	std::vector<std::wstring> operators{ L"=",L"+", L"-", L"/", L"*", L"%", L"&", L"<", L">", L"^", L"!", L"?", L",", L"." }; 
+	std::vector<std::wstring>* p_ContentFile;
+    std::string m_Tag = "Parser";
 
 	std::wstring startBlock = L"#define obf_block_start";
 	std::wstring endBlock = L"#define obf_block_end";
 
-	std::vector<Variable> variables;
+	std::vector<Variable> m_Variables;
 
 
 	std::vector<indexPair> FindBlockIndex();
 
-	void NewNameVariables(std::vector<Variable>& variables, std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter);
+	void NewNameVariables(std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter);
 
 	void AddExpectionsWords();
 
@@ -43,7 +40,6 @@ public:
 	void SpaceOperatorsFix();
 
 	void FindVariables();
-	void ChangeVariables();
 	void OperatorException(std::wstring& line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair>& indexPositions);
 
 	bool IsContinue(const std::vector<indexPair>& indexPosition, bool isContinue);
@@ -52,12 +48,12 @@ public:
 	
 
 	//temporary solution
-	std::vector<Variable>* GetVariables() { return &variables; }
+	std::vector<Variable>* GetVariables() { return &m_Variables; }
 
 	bool Update(std::vector<int> &settings) override;
 	bool DoTechnique() override;
-    std::string GetTag() override { return tag; };
-    void SetTag(std::string tag) override { this->tag = tag;};
+    std::string GetTag() override { return m_Tag; };
+    void SetTag(std::string tag) override { this->m_Tag = tag;};
 
 };
 

@@ -6,27 +6,26 @@
 #include "Encryption.h"
 #include "Junker.h"
 #include "FileHandling.h"
+#include "Settings.h"
 
 static std::mt19937_64 random;
 
-bool Parser::IsContinue(const std::vector<indexPair>& indexPosition, bool isContinue)
+bool Parser::IsContinue(const std::vector<indexPair> &indexPosition, bool isContinue)
 {
 	if (!indexPosition.empty())
 		isContinue = (indexPosition.back().second >= INT32_MAX) ? true : false;
 	return isContinue;
 }
 
-Parser::Parser(std::vector<std::wstring>* ptrContentFile)
+Parser::Parser(std::vector<std::wstring> *p_ContentFile)
 {
-	this->mainString = ptrContentFile;
-
+	this->p_ContentFile = p_ContentFile;
 	AddExpectionsWords();
 }
 
-Parser::Parser(FileHandling& file, std::string name)
+Parser::Parser(FileHandling &file, std::string name)
 {
-	this->mainString = file.LoadFile(name);
-
+	this->p_ContentFile = file.LoadFile(name);
 	AddExpectionsWords();
 }
 
@@ -39,13 +38,15 @@ void Parser::SpaceOperators()
 	size_t index = 0;
 	size_t indexOfPair = 0;
 
+	std::vector<std::vector<std::wstring>> operatorExceptions{{L";", L" ; "}, {L"\t", L" \t "}, {L"(", L"( "}, {L"[", L" [ "}, {L")", L" )"}, {L"]", L" ] "}, {L"{", L" { "}, {L"}", L" } "}};
+
 	bool isChange = true;
 	bool isContinue = false;
-	bool isNotInRange;
+	bool isNotInRange = true;
 
-	for (auto &line : *this->mainString)
+	for (auto &line : *p_ContentFile)
 	{
-		if (CheckInclude(line))
+		if (line.empty() || CheckInclude(line))
 			continue;
 
 		indexPositions.erase(indexPositions.begin(), indexPositions.end());
@@ -53,23 +54,18 @@ void Parser::SpaceOperators()
 
 		isContinue = IsContinue(indexPositions, isContinue);
 
-		for (auto &o : special_operators)
-			OperatorException(line, o, L" " + o + L" ", 2, 2, indexPositions);
+		for (const auto &op : settings::special_operators)
+			OperatorException(line, op, L" " + op + L" ", 2, 2, indexPositions);
 
 		// Exception for (, [, ), ]
-		OperatorException(line, L";", L" ; ", 1, 2, indexPositions);
-		OperatorException(line, L"\t", L" \t ", 1, 2, indexPositions);
-		OperatorException(line, L"(", L"( ", 1, 1, indexPositions);
-		OperatorException(line, L"[", L" [ ", 1, 2, indexPositions);
-		OperatorException(line, L")", L" )", 1, 1, indexPositions);
-		OperatorException(line, L"]", L" ] ", 1, 2, indexPositions);
-		// !!
+		for (const auto &op : operatorExceptions)
+			OperatorException(line, op[0], op[1], 1, short(op[1].length() - 1), indexPositions);
 
-		for (const auto &op : operators)
+		for (const auto &op : settings::operators)
 		{
 			isChange = true;
 
-			if (!line.empty() && line.find(op) != std::string::npos)
+			if (line.find(op) != std::string::npos)
 			{
 				index = line.find(op);
 
@@ -144,7 +140,9 @@ void Parser::SpaceOperatorsFix()
 	std::vector<indexPair> indexPositions;
 	bool isContinue = false;
 
-	for (auto &line : *this->mainString)
+	std::vector<std::vector<std::wstring>> operatorExceptions{{L";", L" ; "}, {L",", L" , "}, {L"(", L"( "}, {L"[", L" [ "}, {L"{", L" { "}, {L")", L" )"}, {L"]", L" ] "}, {L"}", L" } "}};
+
+	for (auto &line : *p_ContentFile)
 	{
 
 		if (CheckInclude(line))
@@ -156,15 +154,8 @@ void Parser::SpaceOperatorsFix()
 
 		isContinue = IsContinue(indexPositions, isContinue);
 
-		OperatorException(line, L";", L" ; ", 1, 2, indexPositions);
-		// OperatorException(line, L"'", L" ' ", 1, 2, indexPositions);
-		OperatorException(line, L",", L" , ", 1, 2, indexPositions);
-		OperatorException(line, L"(", L" ( ", 1, 2, indexPositions);
-		OperatorException(line, L"[", L" [ ", 1, 2, indexPositions);
-		OperatorException(line, L"{", L" { ", 1, 2, indexPositions);
-		OperatorException(line, L")", L" ) ", 1, 2, indexPositions);
-		OperatorException(line, L"]", L" ] ", 1, 2, indexPositions);
-		OperatorException(line, L"}", L" } ", 1, 2, indexPositions);
+		for (const auto &op : operatorExceptions)
+			OperatorException(line, op[0], op[1], 1, 2, indexPositions);
 
 		DeleteDoubleSpaces(line);
 	}
@@ -174,81 +165,79 @@ void Parser::FindVariables()
 {
 
 	std::vector<std::wstring> typesOfVariables{L"int", L"double", L"float", L"string", L"uint8_t", L"uint16_t", L"uint32_t", L"uint64_t", L"int8_t", L"int16_t", L"int32_t", L"int64_t", L"char", L"char16_t", L"char32_t", L"bool", L"short", L"wchar_t", L"size_t"}; // L"void"
+	std::vector<std::wstring> splitedLine;
 
-	bool save = false;
-	bool next = false;
+	bool saveNextWord = false;
+	bool checkNextWord = false;
 	bool change = false;
 	std::wstring typeOfVariable;
-	size_t iter = 0;
 	int pointerCounter = 0;
 	int arrayDimCounter = 0;
 
-	for (auto &line : *this->mainString)
+	for (auto &line : *p_ContentFile)
 	{
-		iter++;
-		Split(line, this->splitedLine, L' ');
-
-		if (!line.empty() && line.find(L"#include") != std::string::npos)
+		if (line.empty())
 			continue;
+		if (line.find(L"#include") != std::string::npos)
+			continue;
+
+		Split(line, splitedLine, L' ');
 
 		for (int i = 0; i < splitedLine.size(); i++)
 		{
-
-			next = false;
-			if (!splitedLine[i].empty() && splitedLine[i].find(L'(') != std::string::npos)
+			if (splitedLine[i].empty())
+				continue;
+			
+			if (splitedLine[i].find(L'(') != std::string::npos)
 			{ // Stop searching in line if there is a function by using "(" with name
-				save = false;
+				saveNextWord = false;
 				continue;
 			}
-			if (save && !splitedLine[i].empty() && splitedLine[i].find(L'&') != std::string::npos)
-			{ // Stop searching in line if there is a function by using "(" with name
-				next = true;
-				continue;
-			}
-			if (save && !splitedLine[i].empty() && splitedLine[i].find(L'*') != std::string::npos)
+
+			if (saveNextWord == true)
 			{
-				next = true;
+				if (splitedLine[i].find(L'&') != std::string::npos)
+					// Next word is a reference
+					continue;
 
-				if (splitedLine[i].find(L"**") != std::string::npos)
-					pointerCounter += 2;
-				else
-					pointerCounter++;
-				continue;
+				else if (splitedLine[i].find(L'*') != std::string::npos)
+				{ // Next word is a pointer
+					// check level of pointer (parser split pointers to form of "** ** ** *" etc.)
+					(splitedLine[i].find(L"**") != std::string::npos) ? pointerCounter += 2 : pointerCounter++;
+					continue;
+				}
 			}
 
-			for (auto &type : typesOfVariables)
-				if (!next && !line.empty() && line.find(type) != std::string::npos)
-					if (splitedLine[i].compare(type) == 0)
-					{				 // Checking if text is type of variable
-						save = true; // set to save next word
-						next = true; // set to check next word
-						typeOfVariable = type;
-						break;
-					}
-			if (save && !next)
-			{
-				save = false;
+			checkNextWord = false;
 
+			for (const auto &type : typesOfVariables)
+				if (line.find(type) != std::string::npos && splitedLine[i].compare(type) == 0)
+				{				 // Checking if text is type of variable
+					saveNextWord = true; 
+					checkNextWord = true; 
+					typeOfVariable = type;
+					break;
+				}
+
+			if (saveNextWord == true && checkNextWord == false)
+			{
+				saveNextWord = false;
 				change = true;
-				if (splitedLine[i] == L">" || splitedLine[i] == L">>" || splitedLine[i] == L";" || splitedLine[i] == L"," || splitedLine[i] == L"const")
-					change = false;
-
-				///*
-				if (i - 2 >= 0 && splitedLine[i - 2] == L"const")
+				if ((splitedLine[i] == L">" || splitedLine[i] == L">>" || splitedLine[i] == L";" || splitedLine[i] == L"," || splitedLine[i] == L"const") && (i - 2 >= 0 && splitedLine[i - 2] == L"const"))
 				{
 					change = false;
-				} //*/
+					continue;
+				}
 
-				if (change == true)
-					for (auto &variable : variables)
+				for (const auto &variable : m_Variables)
+				{
+					if (variable.newName.compare(splitedLine[i]) == 0)
 					{
-						if (variable.newName == splitedLine[i])
-						{
-							change = false;
-							pointerCounter = 0;
-							break;
-						}
+						change = false;
+						pointerCounter = 0;
+						break;
 					}
+				}
 
 				if (change == true)
 				{
@@ -275,15 +264,13 @@ void Parser::FindVariables()
 							}
 						}
 					}
-
-					NewNameVariables(variables, splitedLine[i], typeOfVariable, pointerCounter, arrayDimCounter);
+					NewNameVariables(splitedLine[i], typeOfVariable, pointerCounter, arrayDimCounter);
 				}
 			}
 		}
-		this->splitedLine.erase(this->splitedLine.begin(), this->splitedLine.end());
+		splitedLine.erase(splitedLine.begin(), splitedLine.end());
 	}
 }
-
 
 std::vector<indexPair> Parser::FindBlockIndex()
 {
@@ -292,57 +279,44 @@ std::vector<indexPair> Parser::FindBlockIndex()
 	size_t startIndex;
 
 	int i = 0;
-	for (auto &line : *this->mainString)
+	for (const auto &line : *p_ContentFile)
 	{
-		if (!line.empty() && line.find(startBlock) != std::wstring::npos)
+		if (line.empty())
+			continue;
+		else if (line.find(startBlock) != std::wstring::npos)
 		{
 			isBlockStarted = true;
-			startIndex = i++;
-			continue;
+			startIndex = i;
 		}
-
-		if (!line.empty() && isBlockStarted == true && line.find(endBlock) != std::wstring::npos)
+		else if (isBlockStarted == true && line.find(endBlock) != std::wstring::npos)
 		{
-			indexVector.push_back(indexPair(startIndex, i++));
+			indexVector.push_back(indexPair(startIndex, i));
 			isBlockStarted = false;
-			continue;
 		}
-
 		i++;
 	}
 
 	return indexVector;
 }
 
-void Parser::NewNameVariables(std::vector<Variable> &variables, std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter)
+void Parser::NewNameVariables(std::wstring word, std::wstring typeOfVariable, int pointerCounter, int arrayDimCounter)
 {
-	// std::wstring newName = randomUnicode(10, 0x0041, 0x005A); //A-Z
-	std::wstring newName = RandomUnicode(1, 0x4E00, 0x62FF); // chinese 0x62FF
-	// std::wstring newName = RandomUnicode(1, 0x1F600, 0x1F64F); // emoji 0x1F600, 0x1F64F
-	int i = 1;
-	bool change = true;
-	while (change)
+	std::wstring newName;
+	bool isExist = false;
+	do
 	{
-		change = false;
-
-		for (auto &element : variables)
+		newName = RandomUnicode((randomEngine.gen() % 10) + 1, settings::rangeOfUnicode[0], settings::rangeOfUnicode[1]);
+		isExist = true;
+		for (const auto &element : m_Variables)
 		{
-			if (element.newName == newName)
+			if (element.newName.compare(newName) == 0)
 			{
-				newName = RandomUnicode(++i, 0x4E00, 0x62FF);
-				// newName = RandomUnicode(++i, 0x1F600, 0x1F64F);
-				change = true;
+				isExist = false;
 				break;
 			}
 		}
-	}
-	variables.push_back(Variable(word, newName, typeOfVariable, pointerCounter, arrayDimCounter));
-	// mapVariables.insert(Pair(word, newName));
-}
-
-void Parser::ChangeVariables()
-{
-	throw new std::exception("Not implemented");
+	} while (!isExist);
+	m_Variables.push_back(Variable(word, newName, typeOfVariable, pointerCounter, arrayDimCounter));
 }
 
 void Parser::OperatorException(std::wstring &line, std::wstring findOperator, std::wstring changeOperator, short replace, short find, std::vector<indexPair> &indexPositions)
@@ -350,14 +324,14 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 	size_t index;
 	int indexOfPair = 0;
 	bool isNotInRange;
-	bool isHaveToChangeIndex;
+	bool isHasToChangeIndex;
 	if (!line.empty() && line.find(findOperator) != std::wstring::npos)
 	{
 		index = line.find(findOperator);
 		while (line.find(findOperator, index) != std::wstring::npos)
 		{
 			isNotInRange = true;
-			isHaveToChangeIndex = false;
+			isHasToChangeIndex = false;
 			if (!indexPositions.empty())
 				for (int i = 0; i < indexPositions.size(); i++)
 				{
@@ -370,7 +344,7 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 
 					if (index < indexPositions[i].first)
 					{
-						isHaveToChangeIndex = true;
+						isHasToChangeIndex = true;
 					}
 				}
 
@@ -378,7 +352,7 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 			{
 				line.replace(index, replace, changeOperator);
 
-				if (!indexPositions.empty() && isHaveToChangeIndex == true)
+				if (!indexPositions.empty() && isHasToChangeIndex == true)
 				{
 					if (index < indexPositions[0].first)
 						indexOfPair = -1;
@@ -401,24 +375,20 @@ void Parser::OperatorException(std::wstring &line, std::wstring findOperator, st
 
 void Parser::DeleteDoubleSpaces(std::wstring &line)
 {
-	while (!line.empty() && line.find(L"  ") != std::wstring::npos)
-		line.replace(line.find(L"  "), 2, L" ");
+	auto find = line.find(L"  ");
+	while (!line.empty() && find != std::wstring::npos)
+	{
+		line.replace(find, 2, L" ");
+		find = line.find(L"  ");
+	}
 }
 
 void Parser::AddExpectionsWords()
 {
-	// mapVariables.insert(Pair(L" operator ", L"operator"));
-	// mapVariables.insert(Pair(L" NULL ", L"NULL"));
-	// mapVariables.insert(Pair(L" [ ", L"["));
-
-	variables.push_back(Variable(L" operator ", L"operator", L"special"));
-	variables.push_back(Variable(L" NULL ", L"NULL", L"special"));
-	variables.push_back(Variable(L" [ ", L"[", L"special"));
-	// variables.push_back(Variable(L"false", L"0", L"special"));
-	// variables.push_back(Variable(L"true", L"1", L"special"));
-	// variables.insert(variables.begin(), Variable(word, newName, typeOfVariable));
+	m_Variables.push_back(Variable(L" operator ", L"operator", L"special"));
+	m_Variables.push_back(Variable(L" NULL ", L"NULL", L"special"));
+	m_Variables.push_back(Variable(L" [ ", L"[", L"special"));
 }
-
 
 bool Parser::Update(std::vector<int> &settings)
 {

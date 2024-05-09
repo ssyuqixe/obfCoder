@@ -11,6 +11,7 @@ namespace settings {
 	extern std::vector<bool> junkerOptions;
 	extern std::vector<std::wstring> special_operators;
 	extern std::vector<std::wstring> operators;
+	extern unsigned short rangeOfUnicode[2];
 }
 
 #endif // !SETTINGS_H
